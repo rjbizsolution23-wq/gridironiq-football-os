@@ -9,6 +9,7 @@ import {
   Dumbbell,
   Flame,
   Plus,
+  Search,
   Sparkles,
   Target,
   Timer,
@@ -282,6 +283,138 @@ function PracticeGaps({ perf }: { perf: ConceptPerf[] }) {
   )
 }
 
+// Inline mini drill catalog (mirrors DrillBuilder seed drills)
+const QUICK_DRILLS = [
+  { name: 'Routes on Air — Concept Reps', category: 'Passing', duration: 10, intensity: 'Low' },
+  { name: 'Inside Run Period', category: 'Run Game', duration: 15, intensity: 'High' },
+  { name: 'Skelly 7-on-7', category: 'Team', duration: 15, intensity: 'Medium' },
+  { name: 'Team Period — Scripted', category: 'Team', duration: 20, intensity: 'High' },
+  { name: 'Punt Team Operation', category: 'Special Teams', duration: 10, intensity: 'Low' },
+  { name: 'PAT / Field Goal Operation', category: 'Special Teams', duration: 5, intensity: 'Low' },
+  { name: 'Indy — QB Footwork', category: 'Individual', duration: 12, intensity: 'Low' },
+  { name: 'Indy — RB Press & Vision', category: 'Individual', duration: 10, intensity: 'Medium' },
+  { name: 'Indy — WR Stem & Top of Route', category: 'Individual', duration: 10, intensity: 'Medium' },
+  { name: 'Indy — OL Pass Set', category: 'Individual', duration: 10, intensity: 'Medium' },
+  { name: 'Indy — DL Get-Off & Escape', category: 'Individual', duration: 10, intensity: 'High' },
+  { name: 'Indy — LB Run Fits', category: 'Individual', duration: 12, intensity: 'Medium' },
+  { name: 'Indy — DB Backpedal & Break', category: 'Individual', duration: 10, intensity: 'Medium' },
+  { name: 'Red Zone 7-on-7', category: 'Team', duration: 10, intensity: 'Medium' },
+]
+
+const CATEGORY_COLOR: Record<string, string> = {
+  Passing: 'text-chart-3',
+  'Run Game': 'text-primary',
+  Team: 'text-accent',
+  'Special Teams': 'text-chart-5',
+  Individual: 'text-muted-foreground',
+}
+
+const INTENSITY_COLOR: Record<string, string> = {
+  Low: 'text-primary',
+  Medium: 'text-chart-3',
+  High: 'text-destructive',
+}
+
+function QuickDrillsPanel() {
+  const [search, setSearch] = React.useState('')
+  const [categoryFilter, setCategoryFilter] = React.useState<string>('All')
+
+  const categories = React.useMemo(
+    () => ['All', ...Array.from(new Set(QUICK_DRILLS.map((d) => d.category)))],
+    []
+  )
+
+  const filtered = React.useMemo(() => {
+    return QUICK_DRILLS.filter((d) => {
+      if (categoryFilter !== 'All' && d.category !== categoryFilter) return false
+      if (search) {
+        const s = search.toLowerCase()
+        return d.name.toLowerCase().includes(s) || d.category.toLowerCase().includes(s)
+      }
+      return true
+    })
+  }, [search, categoryFilter])
+
+  return (
+    <Card className="p-4 border-l-4 border-l-chart-3">
+      <div className="flex items-center gap-2 mb-3">
+        <Dumbbell className="size-4 text-chart-3" />
+        <h3 className="text-sm font-semibold uppercase tracking-widest font-mono text-muted-foreground">
+          Quick Drills
+        </h3>
+      </div>
+      <p className="text-[11px] text-muted-foreground mb-2">
+        Browse drills to drop into your practice script. Open DrillBuilder for full details.
+      </p>
+
+      {/* Search */}
+      <div className="relative mb-2">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search drills…"
+          className="w-full bg-background border border-border rounded-md pl-8 pr-2 py-1.5 text-xs"
+        />
+      </div>
+
+      {/* Category filter chips */}
+      <div className="flex flex-wrap gap-1 mb-2">
+        {categories.map((c) => (
+          <button
+            key={c}
+            onClick={() => setCategoryFilter(c)}
+            className={cn(
+              'text-[10px] px-1.5 py-0.5 rounded border font-mono transition-all',
+              categoryFilter === c
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-muted/40 text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+            )}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {/* Drill list */}
+      <ScrollArea className="max-h-[200px] scrollbar-thin -mx-1 px-1">
+        <div className="space-y-1">
+          {filtered.length === 0 ? (
+            <div className="py-4 text-center text-[11px] text-muted-foreground">
+              No drills match.
+            </div>
+          ) : (
+            filtered.map((d, i) => (
+              <div
+                key={i}
+                className="rounded-md border border-border bg-background/40 p-1.5 hover:bg-muted/20 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-1.5">
+                  <span className="text-[11px] font-semibold truncate flex-1">
+                    {d.name}
+                  </span>
+                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                    {d.duration}m
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5 text-[9px] font-mono">
+                  <span className={cn('uppercase tracking-wider', CATEGORY_COLOR[d.category])}>
+                    {d.category}
+                  </span>
+                  <span className="opacity-30">·</span>
+                  <span className={cn('uppercase tracking-wider', INTENSITY_COLOR[d.intensity])}>
+                    {d.intensity}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </ScrollArea>
+    </Card>
+  )
+}
+
 function PracticeMain() {
   const { data, isLoading } = useQuery({
     queryKey: ['gridiron'],
@@ -404,6 +537,9 @@ function PracticeMain() {
         {/* Right rail */}
         <div className="space-y-4">
           <PracticeGaps perf={perf} />
+
+          {/* Quick Drills search */}
+          <QuickDrillsPanel />
 
           {/* Install plan reference */}
           {data.installPlans.length > 0 && (

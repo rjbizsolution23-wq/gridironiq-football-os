@@ -1187,3 +1187,124 @@ Work Log:
 12. **Cross-module intelligence sharing** — SelfScoutIQ warnings could feed into MatchupIQ predictions as additional context.
 13. **WeekPlanIQ task persistence** — let coaches check off weekly tasks and persist completion state to localStorage.
 14. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
+
+---
+Task ID: 12-cron-round-8
+Agent: main (Z.ai Code, cron-triggered webDevReview)
+Task: Eighth 15-min review round — fix SettingsIQ bug, add WeekPlanIQ task persistence + PracticeIQ drill integration
+
+Work Log:
+
+## Project Status Assessment (start of round)
+
+- Dev server healthy on port 3000 (PID 18641). All 24 v1.7 modules render via Agent Browser smoke test.
+- Lint clean (0 errors, 0 warnings).
+- Console clean (no warnings, no errors).
+- Worklog had 13 prior task entries covering v1 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5 + v1.6 + v1.7.
+- 24 modules wired across 3 nav groups: Intelligence (9), Planning (9), Operation (6).
+- Noted bug from round 7: SettingsIQ About card showed stale "22 modules" + "1.6" version.
+
+## Bug Fixed
+
+### SettingsIQ About card stale values
+- `src/components/gridiron/settings-iq.tsx`:
+  - Updated `totalModules` constant from `22` → `24`.
+  - Updated version display from `1.6` → `1.7`.
+- Verified: SettingsIQ now shows "24 modules · 11.4 KB local storage · 5 data stores active" and version "1.7".
+
+## New Features Built
+
+### WeekPlanIQ Task Persistence (`src/components/gridiron/weekplan-iq.tsx`)
+- Coaches can now click any weekly task to toggle its completion state, and the state persists across page reloads.
+- **Changes**:
+  - Added `id` field to every task in `buildWeekPlan()` (deterministic ID from day + label slug).
+  - Changed all task `done` defaults from `true`/`false` to `false` (completion is now user-driven, not hardcoded).
+  - Added `completedTasks: Set<string>` state + `toggleTask(taskId)` function.
+  - Added `resetWeek()` function to clear all task completion.
+  - Persistence: completed task IDs stored in `localStorage` keyed `gridironiq:weekplan:tasks` as JSON array.
+  - Load on mount: `useEffect` reads localStorage and populates the Set.
+  - Applied state: `weekPlan` useMemo overlays `completedTasks` onto the base plan.
+  - Task items are now `<button>` elements (was `<div>`) with hover background + cursor pointer.
+  - Added "Reset" button next to the task counter (appears when completedItems > 0).
+- **Verified end-to-end**:
+  - Initial state: 0/33 tasks done.
+  - Clicked "Watch full game film" → counter updated to 1/33, task got line-through + CheckCircle2 icon.
+  - `localStorage.getItem('gridironiq:weekplan:tasks')` returned `["Sunday-watch-full-game-film"]`.
+  - Reloaded page → counter still showed 1/33 (persistence confirmed).
+
+### PracticeIQ Quick Drills Panel (`src/components/gridiron/practice-iq.tsx`)
+- Added a Quick Drills search panel to the PracticeIQ right rail, letting coaches browse the drill library without leaving the practice planning view.
+- **Changes**:
+  - Added `Search` icon import.
+  - Added `QUICK_DRILLS` constant (14 drills mirroring DrillBuilder seed data: Routes on Air, Inside Run, Skelly 7-on-7, Team Period, Punt/PAT Operation, 7 Indy drills, Red Zone 7-on-7).
+  - Added `CATEGORY_COLOR` + `INTENSITY_COLOR` maps for color-coded labels.
+  - Added `QuickDrillsPanel` component with:
+    - Search input (filter by name or category).
+    - Category filter chips (All / Passing / Run Game / Team / Special Teams / Individual) — active state = primary fill.
+    - Scrollable drill list (max-h-200px) with each drill showing name, duration, category (color-coded), intensity (color-coded).
+    - Empty state: "No drills match."
+  - Inserted `<QuickDrillsPanel />` between PracticeGaps and Install plan reference in the right rail.
+- **Verified end-to-end**:
+  - All 14 drills render on initial load.
+  - Search "QB" → filtered to "Indy — QB Footwork" only.
+  - Category filter chips work (clicking "Run Game" + clearing search shows only Run Game drills).
+  - Each drill card shows name + duration + category badge + intensity badge.
+
+### SettingsIQ Storage Keys Updated
+- Added 2 new storage keys to the `STORAGE_KEYS` array:
+  - `gridironiq:weekplan:tasks` — WeekPlanIQ task completion (HardDrive icon, primary color).
+  - `gridironiq:settings` — SettingsIQ preferences (Settings icon, chart-5 color).
+- Verified: SettingsIQ now shows "5 data stores active" (was 4) and lists all 9 storage keys with live sizes + Clear buttons.
+
+## Verification
+
+- `bun run lint`: ✅ clean (0 errors, 0 warnings).
+- Agent Browser smoke test across all 24 modules: ✅ all render, console 100% clean (no warnings, no errors).
+- **WeekPlanIQ task persistence verified**:
+  - Clicked "Watch full game film" → counter 0/33 → 1/33.
+  - localStorage showed `["Sunday-watch-full-game-film"]`.
+  - Page reload → counter still 1/33 (persistence confirmed).
+  - Reset button appears when tasks are completed.
+- **PracticeIQ Quick Drills verified**:
+  - All 14 drills render on initial load.
+  - Search "QB" → 1 result (Indy — QB Footwork).
+  - Category filter chips work.
+- **SettingsIQ updates verified**:
+  - Shows "24 modules · 11.4 KB local storage · 5 data stores active".
+  - Version shows "1.7".
+  - 9 storage keys listed including new WeekPlanIQ tasks + SettingsIQ preferences.
+- Screenshots captured: `/tmp/qa-weekplan-tasks.png`, `/tmp/qa-practice-drills.png`, `/tmp/qa-settings-updated.png`.
+
+## Stage Summary
+
+### Current project status
+- **24 modules** fully wired (no new modules this round — focused on feature enrichment + bug fix).
+- All modules render and function end-to-end.
+- Lint: clean. Console: clean. No runtime errors.
+- Total module source files: 42 (unchanged).
+- 3 features enhanced: WeekPlanIQ (task persistence), PracticeIQ (drill search panel), SettingsIQ (bug fix + 2 new storage keys).
+
+### Completed modifications
+- 1 bug fixed (SettingsIQ stale module count + version).
+- WeekPlanIQ: full task persistence with localStorage + toggle + reset.
+- PracticeIQ: Quick Drills search panel with 14 drills + category filter + search.
+- SettingsIQ: 2 new storage keys registered (WeekPlanIQ tasks + SettingsIQ preferences).
+
+### Unresolved issues / risks
+- None blocking. All bugs fixed, all features work, lint+console clean.
+
+### Priority recommendations for next round
+1. **Real film upload** — accept video file uploads (currently FilmIQ uses text descriptions only). Use VLM skill to analyze video frames and auto-tag.
+2. **POST persistence API** — let coaches save edited Formation Lab diagrams, PersonnelIQ availability, FilmIQ clips, DrillBuilder custom drills, CallSheet edits, and WeekPlanIQ tasks back to the DB.
+3. **Real auth + multi-tenant isolation** — NextAuth.js v4 is installed; add coach/analyst/player roles per the original product vision.
+4. **PDF export** — server-side PDF generation for CallSheet, Wristband, FilmIQ clip reports, DrillBuilder practice plans, and WeekPlanIQ weekly schedules using the pdf skill.
+5. **Drag-and-drop player repositioning in Formation Lab** — restore the original drag-and-drop intent (currently click-to-select only).
+6. **TwoMinuteIQ opponent mode** — let coach simulate defending a 2-minute drive.
+7. **Quiz mode in FilmIQ** — show a film clip, quiz player on the concept/coverage/result.
+8. **Shareable deep links** — encode filter state in URL for SituationalIQ + TendencyLab + SelfScoutIQ so coaches can share specific views.
+9. **MatchupIQ historical accuracy tracking** — log predicted vs actual scores over time to calibrate the model.
+10. **DrillBuilder → PracticeIQ drag-and-drop** — let coaches drag drills from Quick Drills panel directly into practice periods.
+11. **Cross-module intelligence sharing** — SelfScoutIQ warnings could feed into MatchupIQ predictions as additional context.
+12. **WeekPlanIQ task editing** — let coaches add/edit/customize weekly tasks (currently read-only seed list).
+13. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
+14. **Global search** — add a command-palette style search across all modules (Cmd+K).

@@ -41,6 +41,8 @@ const STORAGE_KEYS = [
   { key: 'gridironiq:film:clips', label: 'FilmIQ clips library', icon: Eye, color: 'text-primary' },
   { key: 'gridironiq:personnel:availability', label: 'PersonnelIQ availability state', icon: Users, color: 'text-chart-5' },
   { key: 'gridironiq:drillbuilder:custom', label: 'DrillBuilder custom drills', icon: HardDrive, color: 'text-chart-3' },
+  { key: 'gridironiq:weekplan:tasks', label: 'WeekPlanIQ task completion', icon: HardDrive, color: 'text-primary' },
+  { key: 'gridironiq:settings', label: 'SettingsIQ preferences', icon: Settings, color: 'text-chart-5' },
 ]
 
 function SettingsRow({
@@ -267,7 +269,7 @@ function SettingsMain() {
     })
   }
 
-  const totalModules = 22
+  const totalModules = 24
 
   return (
     <div className="space-y-5">
@@ -488,7 +490,7 @@ function SettingsMain() {
                 <div className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
                   Version
                 </div>
-                <div className="text-base font-bold font-mono">1.6</div>
+                <div className="text-base font-bold font-mono">1.7</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">

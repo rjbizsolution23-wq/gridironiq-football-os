@@ -109,10 +109,12 @@ interface DayPlan {
   focus: string
   icon: React.ReactNode
   color: string
-  items: Array<{ label: string; done: boolean }>
+  items: Array<{ id: string; label: string; done: boolean }>
 }
 
 function buildWeekPlan(opponentName: string | null): DayPlan[] {
+  const mk = (day: string, label: string) =>
+    `${day}-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`
   return [
     {
       day: 'Sunday',
@@ -121,11 +123,11 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <Eye className="size-4" />,
       color: 'text-chart-5',
       items: [
-        { label: 'Watch full game film', done: true },
-        { label: 'Cut up explosive plays', done: true },
-        { label: 'Cut up negative plays', done: true },
-        { label: 'Position group film sessions', done: false },
-        { label: 'Update FilmIQ clips', done: false },
+        { id: mk('Sunday', 'Watch full game film'), label: 'Watch full game film', done: false },
+        { id: mk('Sunday', 'Cut up explosive plays'), label: 'Cut up explosive plays', done: false },
+        { id: mk('Sunday', 'Cut up negative plays'), label: 'Cut up negative plays', done: false },
+        { id: mk('Sunday', 'Position group film sessions'), label: 'Position group film sessions', done: false },
+        { id: mk('Sunday', 'Update FilmIQ clips'), label: 'Update FilmIQ clips', done: false },
       ],
     },
     {
@@ -135,10 +137,10 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <Dumbbell className="size-4" />,
       color: 'text-primary',
       items: [
-        { label: 'Team corrections walkthrough', done: false },
-        { label: 'Indy drill corrections', done: false },
-        { label: 'Upper body lift', done: false },
-        { label: 'Conditioning: 10x40s', done: false },
+        { id: mk('Monday', 'Team corrections walkthrough'), label: 'Team corrections walkthrough', done: false },
+        { id: mk('Monday', 'Indy drill corrections'), label: 'Indy drill corrections', done: false },
+        { id: mk('Monday', 'Upper body lift'), label: 'Upper body lift', done: false },
+        { id: mk('Monday', 'Conditioning 10x40s'), label: 'Conditioning: 10x40s', done: false },
       ],
     },
     {
@@ -148,12 +150,12 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <Target className="size-4" />,
       color: 'text-accent',
       items: [
-        { label: 'Opponent film cutup review', done: false },
-        { label: 'Install base runs (IZ, Split Zone, Counter)', done: false },
-        { label: 'Install base passes (Stick, Mesh)', done: false },
-        { label: 'Install protections (half-slide, full-slide)', done: false },
-        { label: 'Team period: 1st & 2nd down script', done: false },
-        { label: 'Update GamePlanIQ opening script', done: false },
+        { id: mk('Tuesday', 'Opponent film cutup review'), label: 'Opponent film cutup review', done: false },
+        { id: mk('Tuesday', 'Install base runs'), label: 'Install base runs (IZ, Split Zone, Counter)', done: false },
+        { id: mk('Tuesday', 'Install base passes'), label: 'Install base passes (Stick, Mesh)', done: false },
+        { id: mk('Tuesday', 'Install protections'), label: 'Install protections (half-slide, full-slide)', done: false },
+        { id: mk('Tuesday', 'Team period 1st 2nd down script'), label: 'Team period: 1st & 2nd down script', done: false },
+        { id: mk('Tuesday', 'Update GamePlanIQ opening script'), label: 'Update GamePlanIQ opening script', done: false },
       ],
     },
     {
@@ -163,11 +165,11 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <Flame className="size-4" />,
       color: 'text-destructive',
       items: [
-        { label: 'Install 3rd down package', done: false },
-        { label: 'Install red zone concepts', done: false },
-        { label: 'Skelly 7-on-7: 3rd & medium', done: false },
-        { label: 'Team: red zone 7-on-7', done: false },
-        { label: 'Update CallSheetIQ 3rd & Red sections', done: false },
+        { id: mk('Wednesday', 'Install 3rd down package'), label: 'Install 3rd down package', done: false },
+        { id: mk('Wednesday', 'Install red zone concepts'), label: 'Install red zone concepts', done: false },
+        { id: mk('Wednesday', 'Skelly 7-on-7 3rd medium'), label: 'Skelly 7-on-7: 3rd & medium', done: false },
+        { id: mk('Wednesday', 'Team red zone 7-on-7'), label: 'Team: red zone 7-on-7', done: false },
+        { id: mk('Wednesday', 'Update CallSheetIQ 3rd Red sections'), label: 'Update CallSheetIQ 3rd & Red sections', done: false },
       ],
     },
     {
@@ -177,11 +179,11 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <Clock className="size-4" />,
       color: 'text-chart-3',
       items: [
-        { label: 'Install 2-minute package', done: false },
-        { label: 'Team: first 8 plays (openers)', done: false },
-        { label: 'Two-minute drill (offense)', done: false },
-        { label: 'PAT/FG operation', done: false },
-        { label: 'Update WristbandIQ', done: false },
+        { id: mk('Thursday', 'Install 2-minute package'), label: 'Install 2-minute package', done: false },
+        { id: mk('Thursday', 'Team first 8 plays openers'), label: 'Team: first 8 plays (openers)', done: false },
+        { id: mk('Thursday', 'Two-minute drill offense'), label: 'Two-minute drill (offense)', done: false },
+        { id: mk('Thursday', 'PAT FG operation'), label: 'PAT/FG operation', done: false },
+        { id: mk('Thursday', 'Update WristbandIQ'), label: 'Update WristbandIQ', done: false },
       ],
     },
     {
@@ -191,10 +193,10 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <MapPin className="size-4" />,
       color: 'text-chart-5',
       items: [
-        { label: 'Walkthrough: openers + situational', done: false },
-        { label: 'Special teams walkthrough', done: false },
-        { label: 'Pre-game meal + travel', done: false },
-        { label: 'Hotel film session (away)', done: false },
+        { id: mk('Friday', 'Walkthrough openers situational'), label: 'Walkthrough: openers + situational', done: false },
+        { id: mk('Friday', 'Special teams walkthrough'), label: 'Special teams walkthrough', done: false },
+        { id: mk('Friday', 'Pre-game meal travel'), label: 'Pre-game meal + travel', done: false },
+        { id: mk('Friday', 'Hotel film session away'), label: 'Hotel film session (away)', done: false },
       ],
     },
     {
@@ -204,10 +206,10 @@ function buildWeekPlan(opponentName: string | null): DayPlan[] {
       icon: <Trophy className="size-4" />,
       color: 'text-accent',
       items: [
-        { label: 'Pre-game warmup (90 min before KO)', done: false },
-        { label: 'Final script review', done: false },
-        { label: 'Game!', done: false },
-        { label: 'Post-game film upload', done: false },
+        { id: mk('Saturday', 'Pre-game warmup 90 min before KO'), label: 'Pre-game warmup (90 min before KO)', done: false },
+        { id: mk('Saturday', 'Final script review'), label: 'Final script review', done: false },
+        { id: mk('Saturday', 'Game!'), label: 'Game!', done: false },
+        { id: mk('Saturday', 'Post-game film upload'), label: 'Post-game film upload', done: false },
       ],
     },
   ]
@@ -248,7 +250,57 @@ function WeekPlanMain() {
     [opponents, opponentId]
   )
 
-  const weekPlan = React.useMemo(() => buildWeekPlan(opponent?.name ?? null), [opponent])
+  const weekPlanBase = React.useMemo(() => buildWeekPlan(opponent?.name ?? null), [opponent])
+
+  // Task persistence: load completed task IDs from localStorage
+  const STORAGE_KEY = 'gridironiq:weekplan:tasks'
+  const [completedTasks, setCompletedTasks] = React.useState<Set<string>>(new Set())
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const arr = JSON.parse(raw) as string[]
+        setCompletedTasks(new Set(arr))
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  function toggleTask(taskId: string) {
+    setCompletedTasks((prev) => {
+      const next = new Set(prev)
+      if (next.has(taskId)) next.delete(taskId)
+      else next.add(taskId)
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }
+
+  function resetWeek() {
+    setCompletedTasks(new Set())
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      // ignore
+    }
+  }
+
+  // Apply persisted completion state to the week plan
+  const weekPlan = React.useMemo(() => {
+    return weekPlanBase.map((day) => ({
+      ...day,
+      items: day.items.map((item) => ({
+        ...item,
+        done: completedTasks.has(item.id),
+      })),
+    }))
+  }, [weekPlanBase, completedTasks])
 
   // Progress: count completed items across the week
   const totalItems = weekPlan.reduce((a, d) => a + d.items.length, 0)
@@ -462,6 +514,15 @@ function WeekPlanMain() {
             <Badge variant="outline" className="text-[10px] font-mono">
               {completedItems} / {totalItems} tasks done
             </Badge>
+            {completedItems > 0 && (
+              <button
+                onClick={resetWeek}
+                className="text-[10px] text-muted-foreground hover:text-destructive font-mono uppercase tracking-wider transition-colors"
+                title="Reset all weekly tasks"
+              >
+                Reset
+              </button>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -526,14 +587,18 @@ function WeekPlanMain() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-1.5">
                           {day.items.map((item, j) => (
-                            <div
-                              key={j}
-                              className="flex items-center gap-1.5 text-[11px]"
+                            <button
+                              key={item.id}
+                              onClick={() => toggleTask(item.id)}
+                              className={cn(
+                                'flex items-center gap-1.5 text-[11px] rounded px-1 py-0.5 -mx-1 transition-colors text-left hover:bg-muted/30',
+                                item.done && 'opacity-70'
+                              )}
                             >
                               {item.done ? (
                                 <CheckCircle2 className="size-3 text-primary shrink-0" />
                               ) : (
-                                <div className="size-3 rounded-full border border-muted-foreground/40 shrink-0" />
+                                <div className="size-3 rounded-full border border-muted-foreground/40 shrink-0 hover:border-primary transition-colors" />
                               )}
                               <span
                                 className={cn(
@@ -543,7 +608,7 @@ function WeekPlanMain() {
                               >
                                 {item.label}
                               </span>
-                            </div>
+                            </button>
                           ))}
                         </div>
                       </div>
