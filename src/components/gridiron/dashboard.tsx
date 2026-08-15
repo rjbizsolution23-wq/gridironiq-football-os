@@ -14,6 +14,7 @@ import {
   Dumbbell,
   FlaskConical,
   Flame,
+  Gamepad2,
   GraduationCap,
   ListChecks,
   PlayCircle,
@@ -156,6 +157,13 @@ const MODULE_CARDS: Array<{
     accent: 'text-primary',
   },
   {
+    id: 'matchup',
+    label: 'MatchupIQ',
+    description: 'AI game prediction & key matchups',
+    icon: <Gamepad2 className="size-5" />,
+    accent: 'text-accent',
+  },
+  {
     id: 'coach-ai',
     label: 'Coach AI',
     description: 'Coordinator-level AI assistant',
@@ -203,6 +211,13 @@ const MODULE_CARDS: Array<{
     description: 'End-of-half drill simulator',
     icon: <Clock className="size-5" />,
     accent: 'text-destructive',
+  },
+  {
+    id: 'drills',
+    label: 'DrillBuilder',
+    description: 'Practice drill library & builder',
+    icon: <Dumbbell className="size-5" />,
+    accent: 'text-chart-5',
   },
 ]
 

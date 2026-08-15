@@ -25,6 +25,8 @@ export type ModuleId =
   | 'redzone'
   | 'situational'
   | 'tendencylab'
+  | 'matchup'
+  | 'drills'
 
 export interface UINotice {
   id: string

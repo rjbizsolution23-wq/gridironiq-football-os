@@ -10,8 +10,10 @@ import {
   Clapperboard,
   Clock,
   Crosshair,
+  Dumbbell,
   FlaskConical,
   Flame,
+  Gamepad2,
   GraduationCap,
   LayoutDashboard,
   ListChecks,
@@ -56,6 +58,8 @@ const FilmIQ = dynamic(() => import('@/components/gridiron/film-iq'))
 const RedZoneIQ = dynamic(() => import('@/components/gridiron/redzone-iq'))
 const SituationalIQ = dynamic(() => import('@/components/gridiron/situational-iq'))
 const TendencyLab = dynamic(() => import('@/components/gridiron/tendency-lab'))
+const MatchupIQ = dynamic(() => import('@/components/gridiron/matchup-iq'))
+const DrillBuilder = dynamic(() => import('@/components/gridiron/drill-builder'))
 
 interface NavItem {
   id: ModuleId
@@ -81,10 +85,12 @@ const NAV: NavItem[] = [
   { id: 'analytics', label: 'AnalyticsIQ', short: 'Analytics', icon: <TrendingUp className="size-4" />, group: 'planning' },
   { id: 'redzone', label: 'RedZoneIQ', short: 'Red Zone', icon: <Flame className="size-4" />, group: 'planning', badge: 'NEW' },
   { id: 'film', label: 'FilmIQ', short: 'Film', icon: <Clapperboard className="size-4" />, group: 'planning', badge: 'NEW' },
+  { id: 'matchup', label: 'MatchupIQ', short: 'Matchup', icon: <Gamepad2 className="size-4" />, group: 'planning', badge: 'NEW' },
   { id: 'install', label: 'InstallIQ', short: 'Install', icon: <GraduationCap className="size-4" />, group: 'operation' },
   { id: 'personnel', label: 'PersonnelIQ', short: 'Personnel', icon: <Users className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'quiz', label: 'PlayerQuiz', short: 'Quiz', icon: <Sparkles className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'twominute', label: 'TwoMinuteIQ', short: '2-Min Drill', icon: <Clock className="size-4" />, group: 'operation', badge: 'NEW' },
+  { id: 'drills', label: 'DrillBuilder', short: 'Drills', icon: <Dumbbell className="size-4" />, group: 'operation', badge: 'NEW' },
 ]
 
 const GROUP_LABELS: Record<NavItem['group'], string> = {
@@ -235,6 +241,10 @@ function ModuleRouter() {
       return <SituationalIQ />
     case 'tendencylab':
       return <TendencyLab />
+    case 'matchup':
+      return <MatchupIQ />
+    case 'drills':
+      return <DrillBuilder />
     default:
       return <Dashboard />
   }
@@ -352,7 +362,7 @@ export default function Home() {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
                 <Zap className="size-3 text-accent" />
-                <span className="text-accent">18 modules</span>
+                <span className="text-accent">20 modules</span>
                 <span className="opacity-30">·</span>
                 <span className="text-primary">LLM-powered</span>
               </div>
