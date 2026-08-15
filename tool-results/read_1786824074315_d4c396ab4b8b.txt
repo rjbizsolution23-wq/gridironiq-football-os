@@ -1,0 +1,198 @@
+     1→# GridironIQ™ — Work Log
+     2→
+     3→---
+     4→Task ID: 1-seed
+     5→Agent: general-purpose (seed + domain lib)
+     6→Task: Build comprehensive football domain seed data + football knowledge library
+     7→
+     8→Work Log:
+     9→- Read existing project structure: Next.js 16 + Prisma (SQLite) + TypeScript. Confirmed schema.prisma exists with Team / Player / Formation / PlayFamily / Play / Opponent / Tendency / Game / SnapResult / CallSheet / InstallPlan models.
+    10→- Verified worklog.md did NOT exist (first agent). Created it with this entry.
+    11→- Wrote /home/z/my-project/prisma/seed.ts — a Bun-runnable TypeScript seed script that:
+    12→  - Imports PrismaClient, connects via DATABASE_URL.
+    13→  - Wipes existing data in correct dependency order (snapResult → callSheet → installPlan → tendency → game → play → player → formation → playFamily → opponent → team).
+    14→  - Seeds 12 offensive + 4 defensive formations, 8 play families, 18 plays (14 offensive + 4 defensive), 3 opponents with 32 tendencies, 1 team (Riverside Warriors), 12 players, 3 games with 30 snap results, 1 call sheet (17 sections), 2 install plans.
+    15→  - Every play has full Play DNA: constraints, preferredFronts, coverageTargets, fieldZones (all JSON-string arrays via JSON.stringify), coachingPoints, assignments (JSON array of {position, alignment, assignment, landmark, vsMan, vsZone}), routes for pass plays, and diagram (JSON: {players:[{id,x,y,label}], paths:[{type,from,toX,toY,label}], hash, yardLine}).
+    16→  - 14 of 18 plays have full diagram data with realistic formations (5 OL across LOS, QB in gun at 5y, RB at 7y, WR splits realistic, motion paths for jet/rpo).
+    17→- Wrote /home/z/my-project/src/lib/football/knowledge.ts — a pure TypeScript module exporting strongly-typed constants:
+    18→  - PHILOSOPHIES (11): Spread, Air Raid, West Coast, Pro Style, Pistol, Wing-T, Flexbone, RPO-heavy, Power/Gap, Zone-based, Multiple.
+    19→  - OFFENSIVE_CONCEPTS (48): all required concepts covered (Inside Zone → Post-Wheel).
+    20→  - DEFENSIVE_FRONTS (13): 4-2-5, 4-3, 3-4, 3-3-5, Mint, Tite, Bear, Odd, Even, Nickel, Dime, Goal Line, Prevent.
+    21→  - COVERAGES (14): Cover 0, Cover 1, Cover 1 Robber, Cover 2, Tampa 2, Cover 3, Cover 3 Match, Quarters, Palms, Cover 6, Bracket, Box, Cone, Red Zone Match.
+    22→  - PRESSURES (10): Traditional Blitz, Zone Pressure, Simulated Pressure, Creeper, Fire Zone, Overload, Cross Dog, Edge Pressure, Interior Pressure, Replacement Pressure.
+    23→  - SITUATIONS (16): 1st&10 → 2 Minute.
+    24→  - ROUTE_TREE (13): 0-12 with notes.
+    25→  - buildPlayFamily(base) function returning {base, read, rpo, constraint, counter, playAction, shot, screen, boot}.
+    26→  - FORMATION_LIBRARY (16): mirror of seed formations for UI rendering.
+    27→  - All exports are strongly typed (exported interfaces), JSDoc on key items, ES module syntax, no default export.
+    28→- Ran `bun run db:push` — clean. Prisma Client v6.19.2 generated.
+    29→- Ran `bun prisma/seed.ts` — clean. All records inserted without error.
+    30→- Verified all JSON-string fields parse back as valid JSON (18/18 plays OK, 0 failures).
+    31→- Type-checked knowledge.ts with `bunx tsc --noEmit` — no errors.
+    32→
+    33→Stage Summary:
+    34→- Files written:
+    35→  - /home/z/my-project/prisma/seed.ts (~1,200 lines, ~50KB)
+    36→  - /home/z/my-project/src/lib/football/knowledge.ts (~750 lines, ~30KB)
+    37→- Record counts seeded:
+    38→  - Teams: 1 (Riverside Warriors, philosophy "Spread / RPO-heavy", primaryColor "#16a34a")
+    39→  - Players: 12 (QB #9 Marcus Bell quizScore 0.96, RB #22 Tyler Reed 0.91, ... Mike #44 Carlos Mendez 0.88)
+    40→  - Formations: 16 (12 offense + 4 defense)
+    41→  - PlayFamilies: 8 (6 offense + 2 defense)
+    42→  - Plays: 18 (14 offense + 4 defense — all 18 with full Play DNA JSON)
+    43→  - Opponents: 3 (Central High Wildcats, Northside Academy Eagles, Westview Titans)
+    44→  - Tendencies: 32 (10-12 per opponent, situations: 1st&_10, 3rd_&_4_6, 3rd_&_7+, red_zone, 2nd_&_long, etc., with confidence levels HIGH/MEDIUM)
+    45→  - Games: 3 (Week 1 W 28-17, Week 2 W 31-24, Week 3 L 21-24)
+    46→  - SnapResults: 30 (~10 per game with concept, front, coverage, yardsGained, success/explosive/negative/turnover flags)
+    47→  - CallSheet: 1 ("Default Call Sheet" with 17 sections — Openers, Base Runs, Quick Game, Dropback, Play Action, Screens, RPO, 3rd & Short, 3rd & Medium, 3rd & Long, Backed Up, High Red, Low Red, Goal Line, 2 Point, 4 Minute, 2 Minute)
+    48→  - InstallPlans: 2 (Day 1: Formations, Runs, Pass, Protection; Day 2: Motion, Runs, RPO, Pass)
+    49→- Verification: db:push ✅, seed.ts ✅, JSON parse check ✅ (18/18), tsc --noEmit ✅.
+    50→- Downstream notes:
+    51→  - DATABASE_URL=file:/home/z/my-project/db/custom.db — already configured in .env.
+    52→  - Knowledge library is safe to import from any client/server component (no Prisma, no React).
+    53→  - The Play DNA diagram schema uses 0-100 x/y coordinates with 0=left sideline, 100=right sideline; y: 0=own end zone, 100=opponent end zone, ball at ~70 (LOS at y=70 in offense diagrams).
+    54→  - All seed data is wipe-safe — re-running `bun prisma/seed.ts` cleans and re-inserts cleanly.
+    55→
+    56→---
+    57→Task ID: 2-a
+    58→Agent: general-purpose (PlaybookIQ module)
+    59→Task: Build PlaybookIQ module — play family browser + Play DNA viewer
+    60→
+    61→Work Log:
+    62→- Read project state: worklog.md (1-seed), store.ts (Zustand with selectedPlayId), data.ts (SerializedPlay type with full DNA fields: constraints, preferredFronts, coverageTargets, fieldZones, assignments, routes, complementary, formation, family), knowledge.ts (PHILOSOPHIES array), globals.css (dark theme — field green primary, end-zone orange accent, chart-5 teal for defense), schema.prisma (Play model), and the available shadcn/ui components (Card, Badge, Button, Tabs, Select, ScrollArea, Separator, Tooltip, Avatar, Dialog, Table).
+    63→- Verified /api/gridiron/route.ts returns { plays, formations, families, team, ... } — used React Query to fetch plays client-side.
+    64→- Wrote /home/z/my-project/src/components/gridiron/play-card.tsx — exports `PlayCard` component plus `classifyConcept()` helper, `CONCEPT_BADGE_CLASS` map, `CONCEPT_LABEL` map, and `ConceptKind` type. Card shows mono play code, bold play name, family name, color-coded concept badge, formation/personnel/motion chips, and coverage target tags. Hover: scale-[1.01] + border-primary/40. Selected state: border-primary/60 + glow-ring. Color mapping per the spec (run=primary/turf-green, pass=chart-3/gold, rpo=accent/orange, play_action/boot=chart-5/teal, screen=chart-3/gold, shot=destructive/red, defense=chart-5/teal). NO indigo/blue.
+    65→- Wrote /home/z/my-project/src/components/gridiron/play-dna-panel.tsx — exports `PlayDnaPanel` component taking { play, allPlays, onSelectComplementary }. Renders: 2×2 stat tile grid (Read Type / Read Defender / Protection / QB Footwork with `—` fallbacks), ChipList sections for Constraints / Preferred Fronts / Coverage Targets / Field Zones (each with Lucide icon: Compass/Layers/Shield/Target), Assignments table (Pos / Align / Assignment / Landmark / vs Man / vs Zone with mono position+alignment+landmark columns and alternating bg-muted/30 row stripes), Routes table (only for pass/rpo/play_action/screen/shot/boot — Player / Route / Depth), Coaching Points callout with border-accent/40 + bg-accent/10, and Complementary Plays as clickable chips colored by their own concept kind that call onSelectComplementary(cp.id).
+    66→- Wrote /home/z/my-project/src/components/gridiron/playbook-iq.tsx — default export `PlaybookIQ`. Self-contained: creates its own QueryClient via useState (staleTime 60s, refetchOnWindowFocus false) and wraps the body in QueryClientProvider. Three-column responsive grid (lg:col-span-3 / 6 / 3, all col-span-12 on mobile). Left filter sidebar: GridironIQ™ + PlaybookIQ lockup + live count badge, OFFENSE/DEFENSE Tabs (with side-change handler that clears concept filters), Philosophy Select (maps philosophy id → concept kinds via PHILOSOPHY_TO_KINDS), Personnel chip buttons (10/11/12/21/22/23), Concept-type chip buttons (filtered by side), Search Input with clear button, Clear Filters button. Center: ScrollArea (h-[60vh] lg:h-[calc(100vh-8rem)] scrollbar-thin) with loading/error/empty/filtered states. Right: when no play selected → hidden on mobile, placeholder Card on lg+; when play selected → PlayDnaPanel inside ScrollArea. Selecting a play or complementary chip calls `setSelectedPlayId` from the shared Zustand store.
+    67→- Refactored: ESLint flagged `setConcepts(new Set())` inside a useEffect (react-hooks/set-state-in-effect rule). Moved concept-filter reset into the `handleSideChange` event handler instead — idiomatic React pattern. Removed the now-unused `useEffect` import.
+    68→- Replaced `Football` icon import (not exported by lucide-react@0.525.0) with `Goal` icon for the empty/error/placeholder states.
+    69→- Verification: `bun run lint` clean (no errors, no warnings). `bunx tsc --noEmit` clean (no errors in src/ — only pre-existing errors in examples/ and skills/ which are gitignored at the eslint level).
+    70→
+    71→Stage Summary:
+    72→- Files written:
+    73→  - /home/z/my-project/src/components/gridiron/play-card.tsx (~155 lines) — PlayCard component + concept classification helpers (classifyConcept, CONCEPT_BADGE_CLASS, CONCEPT_LABEL, ConceptKind type). Named + default export.
+    74→  - /home/z/my-project/src/components/gridiron/play-dna-panel.tsx (~390 lines) — PlayDnaPanel component with stat tiles, chip lists, assignments/routes tables, coaching callout, complementary chips. Named + default export.
+    75→  - /home/z/my-project/src/components/gridiron/playbook-iq.tsx (~490 lines) — PlaybookIQ default export, self-contained QueryClientProvider, 3-column responsive layout, full filter sidebar, list, and DNA panel wiring.
+    76→- Lint: ✅ `bun run lint` clean.
+    77→- TypeScript: ✅ `bunx tsc --noEmit` clean for src/.
+    78→- Integration notes for the page.tsx integrator:
+    79→  - Default export: `import PlaybookIQ from '@/components/gridiron/playbook-iq'` (or `import { default as PlaybookIQ }`).
+    80→  - Mount it inside the main content area when the active module === 'playbook'. The component fills its parent's height — wrap it in a container with a defined height (e.g. `h-[calc(100vh-4rem)]` to leave room for a 4rem header).
+    81→  - The module manages its own React Query provider, so no global QueryClientProvider is needed.
+    82→  - Play selection writes to `useAppStore.selectedPlayId` — other modules (DesignerIQ, CallSheet, etc.) can read this to know which play the coach is currently inspecting.
+    83→  - `selectedPlayId` is NOT cleared on side-switch — a coach can flip from offense to defense and the previously selected offensive play stays visible in the DNA panel for cross-reference.
+    84→  - All icons used: Filter, Goal, Loader2, Search, Shield, Swords, X (playbook-iq); Compass, Crosshair, Footprints, Layers, Lightbulb, Link2, Shield, Target (play-dna-panel). All exist in lucide-react@0.525.0.
+    85→
+    86→---
+    87→Task ID: 2-c
+    88→Agent: general-purpose (ScoutIQ module)
+    89→Task: Build ScoutIQ — opponent tendency intelligence dashboard
+    90→
+    91→Work Log:
+    92→- Read prior worklog (1-seed, 2-a), store.ts (Zustand with selectedOpponentId / setSelectedOpponentId), data.ts (getOpponents includes tendencies + games; getSnapResults includes opponentId, coverage, pressure, front), knowledge.ts (SITUATIONS, FORMATION_LIBRARY, COVERAGES, PRESSURES), globals.css (dark theme — field-green primary, end-zone-orange accent, chart-5 teal, NO indigo/blue), prisma/schema.prisma (Opponent + Tendency models: situation, formationKey, personnel, hash, result, value, probability, sampleSize, confidence, notes), /api/gridiron/route.ts (returns opponents + snapResults + everything else), existing UI components (Card, Badge, Select, Tooltip, chart.tsx with ChartContainer/ChartTooltip/ChartTooltipContent), and playbook-iq.tsx as the pattern reference for self-contained QueryClient + Zustand wiring.
+    93→- Wrote /home/z/my-project/src/components/gridiron/scout-utils.ts — pure TypeScript, no React. Exports:
+    94→  - Types: TendencyRow, GameRow, OpponentSnapshot, SnapResultRow, ScoutSummary, DefensiveRecommendation, ConfidenceLevel.
+    95→  - Constants: SITUATION_LABELS, SITUATION_ORDER, BREAKDOWN_SITUATIONS (1st&10 / 2nd&Long / 3rd&Short / 3rd&4-6 / 3rd&7+ / red_zone), SITUATION_DESCRIPTIONS, COMMON_FORMATIONS (Trips, Doubles, Empty, Ace, I-Pro, Wing-T, Pistol, Bunch, Quads, Trey), CONFIDENCE_BADGE_CLASS.
+    96→  - confidenceFromSample(sampleSize) — HIGH ≥25 / MEDIUM 10-24 / LOW <10.
+    97→  - buildScoutSummary(opponent) — deterministic, sample-weighted: overallRunPass split, topFormation by summed sampleSize, topConcepts ranked by prob×sample, passingStrengths (distinct pass concepts), thirdDownTendency narrative, redZoneTendency narrative, and a 3-4 sentence auto-narrative combining mascot + run/pass split + charted snaps + top formation + top-3 highest-probability concepts + third-down narrative. Same opponent → same summary every time.
+    98→  - buildDefensiveRecommendations(opponent) — deterministic rule engine implementing all 5 spec rules + fallback:
+    99→    1. 3rd&medium pass-rate > 60% → Nickel simulated pressure + Cover 3 Match
+   100→    2. Red-zone QB-run probability > 25% → gap exchange + QB spy
+   101→    3. Trips formation share > 40% → stack-shell to trips + rotate
+   102→    4. Empty formation share > 25% → dime + free-rush creeper
+   103→    5. Glance RPO probability > 15% → apex leverage + boundary corner squat
+   104→    Each rec has: trigger, recommendation headline, coverage behind, pressure plan, coaching point, priority (high/medium/low). Recs sorted by priority.
+   105→- Wrote /home/z/my-project/src/components/gridiron/tendency-heatmap.tsx — HTML <table> (not SVG). Rows = situations in canonical SITUATION_ORDER (only those present in data), columns = formation keys (COMMON_FORMATIONS first, then any extras alphabetically). Each cell shows the highest-probability tendency value (e.g. "Mesh 34%") with inline `style={{ backgroundColor: \`oklch(0.62 0.16 152 / ${0.15 + prob * 0.7})\` }}` for the heat scale (0% → muted/30 dark, 100% → primary green). Empty cells render "—" on bg-muted/30. Sticky left column (situation label) with z-10. Heat scale legend in the footer.
+   106→- Wrote /home/z/my-project/src/components/gridiron/coverage-pressure-chart.tsx — Recharts horizontal BarChart (layout="vertical"). Aggregates snap_results for the selected opponent by coverage AND pressure, sorts by frequency, takes top 8. Uses `Cell` from recharts to color bars by kind: primary green (oklch 0.62 0.16 152) for coverage, accent orange (oklch 0.68 0.18 55) for pressure — both theme tokens, NO indigo/blue. ChartContainer provides muted-foreground axis text via built-in CSS. ChartTooltipContent overridden with `border border-border bg-popover text-popover-foreground shadow-lg` to match the spec. Empty state shows "No coverage/pressure data charted for this opponent." Legend with color swatches + snap count footer.
+   107→- Wrote /home/z/my-project/src/components/gridiron/situation-breakdown.tsx — 6-card responsive grid (1col mobile / 2col sm / 3col xl). Each card: situation label + description + confidence badge (with "Limited sample — treat with caution" tooltip for LOW). When data: run/pass split bar (primary green = run, chart-3 gold = pass), sample-size label, and top-3 concepts list with probabilities. Empty state shows "No charted data". Cards have hover:border-primary/40 transition-colors.
+   108→- Wrote /home/z/my-project/src/components/gridiron/defensive-recommendation.tsx — Card-wrapped callout panel. Header with Shield icon + "Defensive Recommendation" + auto-generated count. 2-column grid of recommendation cards (1col mobile). Each rec card: AlertTriangle icon + headline + trigger condition (left), priority badge (right) — high=destructive red, medium=chart-3 gold, low=muted. Coverage + Pressure dl grid. Coaching Point callout with Target icon + accent orange border/background. Cards sorted high → medium → low priority.
+   109→- Wrote /home/z/my-project/src/components/gridiron/scout-iq.tsx — default export `ScoutIQ`. Self-contained: own QueryClient via useState (staleTime 60s, refetchOnWindowFocus false) wrapped in QueryClientProvider. Fetches /api/gridiron, reads `opponents` + `snapResults`. Reads `useAppStore.selectedOpponentId` — if null, derives `currentOpponentId = selectedOpponentId ?? opponents[0]?.id` (pure derivation, no derived-state-in-effect). A single useEffect persists the derived default back to the store when needed (side-effect of persistence, not derived state). Layout: vertical flex gap-4 p-3/p-4 — natural page scroll, NO internal overflow containers. Header → Scout Summary (auto-narrative + 4 stat tiles: Top formation, Run/Pass, 3rd-down, Red zone + top-3 concepts list) → TendencyHeatmap → grid lg:grid-cols-12 (SituationBreakdown lg:col-span-7 + CoveragePressureChart lg:col-span-5) → DefensiveRecommendationPanel. Loading/error/empty states with Target icon.
+   110→- Fixed one TypeScript error in tendency-heatmap.tsx: `[...COMMON_FORMATIONS]` was typed as the literal union, so `.includes(t.formationKey)` rejected `string`. Annotated the local as `string[]` to fix.
+   111→- Verification:
+   112→  - `bun run lint` → clean (exit 0, no warnings).
+   113→  - `bunx tsc --noEmit` → clean for src/ (only pre-existing errors in examples/ and skills/, both gitignored at the eslint level).
+   114→  - Manually traced the recommendation engine against seed data: Central High Wildcats → 3 recs (3rd-med-pass, rz-qb-run, glance-rpo); Northside Academy Eagles → 4 recs (+ trips-heavy, + empty-heavy); Westview Titans → 3 recs (third-med-pass, trips-heavy, glance-rpo). All rules fire as designed.
+   115→
+   116→Stage Summary:
+   117→- Files written (6 total — 5 spec'd + 1 shared utility):
+   118→  - /home/z/my-project/src/components/gridiron/scout-utils.ts (~430 lines, ~17.5KB) — pure TS types + constants + buildScoutSummary + buildDefensiveRecommendations + confidence helpers. No React, no Prisma, safe from client/server.
+   119→  - /home/z/my-project/src/components/gridiron/scout-iq.tsx (~332 lines, ~12.4KB) — default export `ScoutIQ`. Self-contained QueryClientProvider. Reads & writes `useAppStore.selectedOpponentId`. 5-section vertical layout.
+   120→  - /home/z/my-project/src/components/gridiron/tendency-heatmap.tsx (~175 lines, ~7.0KB) — HTML <table> heatmap with inline oklch background-color cells.
+   121→  - /home/z/my-project/src/components/gridiron/coverage-pressure-chart.tsx (~185 lines, ~5.9KB) — Recharts horizontal BarChart with per-bar Cell coloring (green=coverage, orange=pressure).
+   122→  - /home/z/my-project/src/components/gridiron/situation-breakdown.tsx (~176 lines, ~5.5KB) — responsive 1/2/3-col card grid with run/pass bars + confidence badges + LOW tooltip.
+   123→  - /home/z/my-project/src/components/gridiron/defensive-recommendation.tsx (~135 lines, ~5.0KB) — rule-based callout panel with priority badges + coverage/pressure grid + coaching-point callout.
+   124→- Lint: ✅ `bun run lint` clean (exit 0).
+   125→- TypeScript: ✅ `bunx tsc --noEmit` clean for src/ (only pre-existing errors in gitignored examples/ and skills/).
+   126→- Integration notes for the page.tsx integrator:
+   127→  - Default export: `import ScoutIQ from '@/components/gridiron/scout-iq'`.
+   128→  - Mount inside the main content area when active module === 'scout'. The component fills its parent's natural scroll flow — wrap in a normal page container (no fixed-height overflow wrapper required).
+   129→  - The module manages its own React Query provider, so no global QueryClientProvider is needed.
+   130→  - Reads `useAppStore.selectedOpponentId` (defaults to first opponent if null, persists the default back to the store so GameplanIQ / CallSheet / etc. all see the same opponent).
+   131→  - Opponent selector switches all views live: summary regenerates, heatmap re-renders, chart re-aggregates, situation cards recompute, recommendations re-evaluate.
+   132→  - Color palette used: bg-card / border / muted-foreground / primary (field green) / chart-3 (gold) / chart-5 (teal) / accent (end-zone orange) / destructive (red). NO indigo / blue anywhere.
+   133→  - All icons used: Activity, Crosshair, Loader2, Target, TrendingUp (scout-iq); Activity (tendency-heatmap); BarChart3 (coverage-pressure-chart); TrendingUp (situation-breakdown); AlertTriangle, Shield, Target (defensive-recommendation). All exist in lucide-react@0.525.0.
+   134→  - Defensive recommendation rules are deterministic and pure — they re-evaluate on every opponent switch with zero network calls. Same opponent → same recommendations every render.
+   135→
+   136→
+   137→---
+   138→Task ID: 2-d
+   139→Agent: general-purpose (Coach AI module)
+   140→Task: Build Coach AI chat module — LLM-powered football intelligence assistant
+   141→
+   142→Work Log:
+   143→- Read prior worklog (1-seed, 2-a, 2-c), store.ts (Zustand with activeModule incl. 'coach-ai'), data.ts (SerializedPlay shape), knowledge.ts (PHILOSOPHIES etc.), /api/coach-ai/route.ts (POST { message, history } → { response, context, createdAt }, server builds contextBlock from team/plays/opponents/perf/summary and calls z-ai-web-dev-sdk), globals.css (dark theme — field-green primary, end-zone-orange accent, helmet-gradient + scrollbar-thin + animate-pulse-soft utilities), and the shadcn/ui primitives (Card, Button, Badge, Input, Textarea, Avatar).
+   144→- Wrote /home/z/my-project/src/components/gridiron/chat-message.tsx — exports `ChatMessage`, `TypingIndicator`, `EmptyState`, plus the `ChatMessageShape` and `ChatRole` types. Bubble rendering:
+   145→  - User bubbles: right-aligned (`flex-row-reverse`), `bg-accent text-accent-foreground`, `rounded-tr-sm`, `max-w-[75%]`.
+   146→  - AI bubbles: left-aligned, `bg-muted text-foreground`, `rounded-tl-sm`, `max-w-[85%]`.
+   147→  - Error bubbles: AI-style with `border-destructive/40 bg-destructive/15` and a Retry button below.
+   148→  - Inline code: regex `/(`[^`]+`)/g` splits content; backtick spans render as `<code class="font-mono text-primary bg-background/70">`. Whole bubble uses `whitespace-pre-wrap break-words` so newlines + bullets flow naturally — NO react-markdown pulled in.
+   149→  - Avatars: CoachAvatar uses `helmet-gradient` + Lucide `Bot`; UserAvatar uses `bg-muted` + Lucide `User`.
+   150→  - TypingIndicator: 3 `size-1.5 rounded-full bg-primary animate-pulse-soft` dots inside a Coach AI bubble, staggered via `animationDelay` 0ms / 240ms / 480ms.
+   151→  - EmptyState: centered helmet-gradient circle with `Sparkles` icon, "Ask Coach AI™ anything" headline, supporting copy, and a 2-col grid of 4 featured quick-prompt chips (single-click sends).
+   152→  - Framer-motion entrance: `initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}` (transition 0.22s easeOut).
+   153→- Wrote /home/z/my-project/src/components/gridiron/chat-input.tsx — exports `ChatInput`. Auto-resizing `<textarea rows={1}>` (capped at 160px), `bg-background border border-border focus-visible:ring-primary`. Send button: `bg-primary text-primary-foreground size-10 rounded-lg` with Lucide `Send` icon; swaps to `Loader2 animate-spin` while `isPending` (disabled). Character counter: `n / 2000` in font-mono, turns destructive when over limit, accent when <200 remaining. Keyboard: Enter sends, Shift+Enter inserts newline, IME composition respected (`e.nativeEvent.isComposing`). Footer hint: "Enter to send · Shift+Enter for newline".
+   154→- Wrote /home/z/my-project/src/components/gridiron/quick-prompts.tsx — exports `QuickPrompts` (right rail). Three stacked Cards:
+   155→  1. Active Context — fetched from `/api/gridiron` via `useQuery({ queryKey: ['gridiron'] })` (deduped with the parent's QueryClient). Rows: Team (name), Plays (count + " installed"), Opponents (top 3 joined with " · "). Loading/error states render "Loading…" / "Unavailable".
+   156→  2. Quick Prompts — 8 spec'd suggestions, each a `<button>` styled `border border-border bg-muted/50 text-xs hover:bg-muted hover:border-primary/40`. Single click calls `onPick(text)`.
+   157→  3. Recent Topics — last 4 user messages, clickable to re-send. Empty state copy included.
+   158→- Wrote /home/z/my-project/src/components/gridiron/coach-ai.tsx — default export `CoachAI`. Self-contained: ships its own `QueryClient` via `useState` (staleTime 60s, refetchOnWindowFocus false) wrapped in `QueryClientProvider`, mirroring the playbook-iq pattern. Layout: 12-col grid (`lg:col-span-8 xl:col-span-9` chat column + `lg:col-span-4 xl:col-span-3` right rail, both `col-span-12` on mobile so the rail collapses below). Header card: helmet-gradient avatar + Lucide `Bot`, "Coach AI™" title, "Coordinator-level football intelligence" subtitle, status dot (`size-2 rounded-full bg-primary animate-pulse-soft`) + "Online" label, ghost Clear button (Lucide `Trash2`, disabled when empty or pending). Chat container: `Card` with `flex flex-col gap-0 overflow-hidden`, inner `<div ref={scrollRef} className="scrollbar-thin flex-1 overflow-y-auto px-4 py-4" style={{ maxHeight: 'calc(100vh - 12rem)' }}>` — NO nested ScrollArea, just `overflow-y-auto`. Empty state renders the `EmptyState` component; otherwise renders `messages.map(ChatMessageBubble)` + `TypingIndicator` when pending. `ChatInput` pinned at the bottom of the Card.
+   159→- State + persistence:
+   160→  - `messages: ChatMessageShape[]` owned locally; `hydrated` flag guards localStorage writes to avoid clobbering on first paint.
+   161→  - `useEffect` on mount reads `localStorage.getItem('gridironiq:coach-ai:history')`, JSON.parses, validates with `isChatMessageShape` type guard (filters out corrupt entries), and sets state. Wrapped in try/catch.
+   162→  - Separate `useEffect` writes `JSON.stringify(messages)` back to localStorage whenever messages change (after hydration).
+   163→  - `useEffect` on `[messages.length, isPending]` calls `scrollRef.current.scrollTo({ top: scrollHeight, behavior: 'smooth' })` — container-only scroll, doesn't scroll the page.
+   164→- API wiring (`sendMessage`):
+   165→  - Trims input, guards against empty / pending.
+   166→  - Appends the user bubble immediately, sets `isPending=true`.
+   167→  - Builds `history` from the last 12 prior messages (`slice(-12)` ≈ 6 user+assistant pairs, `MAX_HISTORY_TURNS=6`), filtering out error bubbles.
+   168→  - POSTs `{ message, history }` to `/api/coach-ai`.
+   169→  - On success: appends an assistant bubble with the response text (or fallback offline message).
+   170→  - On non-2xx or thrown error: appends an assistant bubble marked `error: true` with a network/offline message; the bubble renders with the Retry button.
+   171→  - `retryLast` re-sends the last user message (stored in `lastUserTextRef`); only fires for error bubbles while not pending.
+   172→  - `clearHistory` wipes messages + lastUserTextRef + localStorage entry.
+   173→- Verification:
+   174→  - `bun run lint` → exit 0, no errors, no warnings.
+   175→  - `bunx eslint <4 new files>` → exit 0.
+   176→  - `bunx tsc --noEmit` → no errors in src/ (only pre-existing errors in gitignored examples/ and skills/).
+   177→  - All icons used verified to exist in lucide-react@0.525.0: Bot, User, RotateCcw, Sparkles, Loader2, Send, Trash2, Activity, Clock, Layers, ListChecks, Users.
+   178→
+   179→Stage Summary:
+   180→- Files written (4 total):
+   181→  - /home/z/my-project/src/components/gridiron/coach-ai.tsx (~361 lines) — default export `CoachAI`. Self-contained QueryClientProvider. Owns messages + localStorage + /api/coach-ai wiring + auto-scroll + retry/clear. Responsive 12-col grid (chat lg:col-span-8/xl:9 + sidebar lg:col-span-4/xl:3).
+   182→  - /home/z/my-project/src/components/gridiron/chat-message.tsx (~248 lines) — `ChatMessage` bubble (user right/accent 75%, AI left/muted 85%, error variant with Retry), `TypingIndicator` (3 staggered pulsing dots), `EmptyState` (helmet-gradient avatar + 4 featured quick-prompt chips). Framer-motion entrance animations.
+   183→  - /home/z/my-project/src/components/gridiron/chat-input.tsx (~138 lines) — `ChatInput`. Auto-resizing textarea, send button with primary bg + Send icon, `n / 2000` char counter (destructive when over, accent when low), Enter-to-send / Shift+Enter-newline, Loader2 spinner while pending.
+   184→  - /home/z/my-project/src/components/gridiron/quick-prompts.tsx (~200 lines) — `QuickPrompts` right rail. Active Context card (team/plays/opponents from /api/gridiron via React Query), 8 quick-prompt chips, Recent Topics list (last 4 user messages, clickable to re-send).
+   185→- Lint: ✅ `bun run lint` clean (exit 0).
+   186→- TypeScript: ✅ `bunx tsc --noEmit` clean for src/ (only pre-existing errors in gitignored examples/ and skills/).
+   187→- Integration notes for the page.tsx integrator:
+   188→  - Default export: `import CoachAI from '@/components/gridiron/coach-ai'`.
+   189→  - Mount inside the main content area when `activeModule === 'coach-ai'`. The component fills its parent's height — wrap in a container with a defined height (e.g. `h-[calc(100vh-4rem)]` to leave room for a 4rem header).
+   190→  - The module manages its own React Query provider, so no global QueryClientProvider is needed.
+   191→  - The chat container's inner scroll area uses `maxHeight: 'calc(100vh - 12rem)'` — tune if the page chrome is taller than ~4rem.
+   192→  - All client→LLM traffic goes through `/api/coach-ai` — no direct LLM SDK calls from the client.
+   193→  - localStorage key: `gridironiq:coach-ai:history`. The "Clear" button removes this key.
+   194→  - Color palette: bg-card / border / muted / muted-foreground / primary (field green) / accent (end-zone orange) / destructive (red). NO indigo / blue anywhere.
+   195→  - All icons used: Bot, Trash2 (coach-ai); Bot, RotateCcw, Sparkles, User (chat-message); Loader2, Send (chat-input); Activity, Clock, Layers, ListChecks, Users (quick-prompts). All verified in lucide-react@0.525.0.
+   196→  - Quick-prompt chips are spec'd as `bg-muted/50 hover:bg-muted hover:border-primary/40 border border-border text-xs` — matches exactly.
+   197→  - Empty state includes 4 featured quick-prompt chips inline; the full 8 are in the right rail.
+   198→

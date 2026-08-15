@@ -1,0 +1,213 @@
+// GridironIQ™ — Football Intelligence OS
+// Prisma schema (SQLite)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Organizations & Team Memory ----------
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  philosophy  String   // Spread, Air Raid, West Coast, etc.
+  primaryColor String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  players     Player[]
+  plays       Play[]
+  opponents   Opponent[]
+  games       Game[]
+  callSheets  CallSheet[]
+  installPlans InstallPlan[]
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  jersey    Int
+  name      String
+  position  String   // QB, RB, WR, TE, OL, DL, LB, DB, K, P
+  group     String   // offensive / defensive / special_teams
+  height    String?
+  weight    Int?
+  speedGrade String? // A+, A, B+, B, C
+  notes     String?
+  quizScore Float?   // 0-100 mastery
+  createdAt DateTime @default(now())
+}
+
+// ---------- PlaybookIQ — Play DNA ----------
+
+model Formation {
+  id          String   @id @default(cuid())
+  code        String   @unique // GUN_TRIPS_R, I_PRO_L, etc.
+  name        String   // Gun Trips Right
+  side        String   // offense/defense
+  personnel   String   // 11, 12, 21, 10, etc.
+  backfield   String?  // gun, pistol, under-center, shotgun
+  strength    String?  // field, boundary, right, left
+  description String?
+  createdAt   DateTime @default(now())
+
+  plays       Play[]
+}
+
+model PlayFamily {
+  id          String   @id @default(cuid())
+  code        String   @unique // INSIDE_ZONE_FAMILY, etc.
+  name        String
+  side        String   // offense/defense
+  baseConcept String
+  description String?
+  createdAt   DateTime @default(now())
+
+  plays       Play[]
+}
+
+model Play {
+  id              String   @id @default(cuid())
+  teamId          String?
+  team            Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  formationId     String?
+  formation       Formation? @relation(fields: [formationId], references: [id], onDelete: SetNull)
+  familyId        String?
+  family          PlayFamily? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  playId          String   @unique // OFF-RPO-0172
+  name            String   // Gun Trips F Jet IZ Glance
+  side            String   // offense/defense
+  personnel       String?
+  motion          String?
+  concept         String   // inside_zone, glance_rpo, cover_3_match, etc.
+  readType        String?  // conflict_defender, half-field, full-field
+  readDefender    String?  // boundary_apex, mike, etc.
+  protection      String?
+  qbFootwork      String?
+  constraints     String?  // JSON array
+  preferredFronts String?  // JSON array
+  coverageTargets String?  // JSON array
+  fieldZones      String?  // JSON array
+  coachingPoints  String?
+  assignments     String?  // JSON array of {position, assignment}
+  routes          String?  // JSON array of {player, route}
+  diagram         String?  // JSON: player positions + paths
+  complementary   String?  // JSON array of complementary play ids
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  snapResults     SnapResult[]
+}
+
+// ---------- ScoutIQ — Opponent Intelligence ----------
+
+model Opponent {
+  id          String   @id @default(cuid())
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  name        String   // Central High
+  mascot      String?
+  league      String?
+  scoutSummary String? // AI-generated summary
+  createdAt   DateTime @default(now())
+
+  games       Game[]
+  snapResults SnapResult[]
+  tendencies  Tendency[]
+}
+
+model Tendency {
+  id          String   @id @default(cuid())
+  opponentId  String
+  opponent    Opponent @relation(fields: [opponentId], references: [id], onDelete: Cascade)
+  situation   String   // 3rd_&_7+, 1st_&_10, red_zone, etc.
+  formationKey String? // Trips, Empty, etc.
+  personnel   String?
+  hash        String?
+  result      String   // pass / run / pressure / coverage
+  value       String   // Mesh, Cover 3, QB Draw, etc.
+  probability Float    // 0-1
+  sampleSize  Int
+  confidence  String   // HIGH / MEDIUM / LOW
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+// ---------- GamePlanIQ & Postgame ----------
+
+model Game {
+  id          String   @id @default(cuid())
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  opponentId  String?
+  opponent    Opponent? @relation(fields: [opponentId], references: [id], onDelete: SetNull)
+  week        Int
+  date        DateTime
+  location    String   // home/away/neutral
+  ourScore    Int?
+  oppScore    Int?
+  result      String?  // W/L
+  createdAt   DateTime @default(now())
+
+  snapResults SnapResult[]
+  callSheets  CallSheet[]
+}
+
+model SnapResult {
+  id          String   @id @default(cuid())
+  gameId      String?
+  game        Game?    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playId      String?
+  play        Play?    @relation(fields: [playId], references: [id], onDelete: SetNull)
+  opponentId  String?
+  opponent    Opponent? @relation(fields: [opponentId], references: [id], onDelete: SetNull)
+  quarter     Int
+  clock       String?
+  down        Int
+  distance    Int
+  hash        String?  // left/right/middle
+  yardLine    Int
+  formation    String?
+  personnel   String?
+  motion      String?
+  concept      String?
+  front       String?
+  coverage    String?
+  pressure    String?
+  playType    String?  // run/pass
+  yardsGained Int
+  success     Boolean
+  explosive   Boolean
+  negative    Boolean
+  turnover    Boolean
+  penalty     Boolean?
+  createdAt   DateTime @default(now())
+}
+
+model CallSheet {
+  id          String   @id @default(cuid())
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  gameId      String?
+  game        Game?    @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  name        String
+  sections    String   // JSON: [{situation, plays:[{playId, note, priority}]}]
+  createdAt   DateTime @default(now())
+}
+
+model InstallPlan {
+  id          String   @id @default(cuid())
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  day         Int      // 1, 2, 3...
+  title       String
+  focus       String?
+  sections    String   // JSON: [{period, items:[{type, name}]}]
+  createdAt   DateTime @default(now())
+}

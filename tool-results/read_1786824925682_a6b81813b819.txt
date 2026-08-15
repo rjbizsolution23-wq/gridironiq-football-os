@@ -1,0 +1,748 @@
+     1→'use client'
+     2→
+     3→/**
+     4→ * GamePlanIQ™ — AI-assisted weekly game-planning module.
+     5→ *
+     6→ * Two tabs:
+     7→ *   1. Opening Script Builder — generates a 15-play opener for a selected
+     8→ *      opponent via POST /api/gameplan (mode: 'opening_script').
+     9→ *   2. Situation Rec — pick a down/distance/hash/yard-line/quarter/score
+    10→ *      situation, get the AI's top 3 play recommendations via the same
+    11→ *      endpoint (mode: 'situation_recommendation').
+    12→ *
+    13→ * Self-contained: ships its own React Query client so it can fetch the
+    14→ * shared opponent list without requiring a global provider. Reads the
+    15→ * shared `selectedOpponentId` from Zustand (defaults to the first
+    16→ * opponent + persists the default back, matching the ScoutIQ pattern).
+    17→ *
+    18→ * Persistence:
+    19→ *   - localStorage key per mode per opponent:
+    20→ *     `gridironiq:gameplan:opening_script:<opponentId>`
+    21→ *     `gridironiq:gameplan:situation_recommendation:<opponentId>`
+    22→ *   - On mount + on opponent change, the stored result (if any) is
+    23→ *     hydrated into state so refresh keeps the last script / recs.
+    24→ *
+    25→ * Natural page scroll — no nested ScrollArea inside the module.
+    26→ */
+    27→
+    28→import * as React from 'react'
+    29→import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+    30→import {
+    31→  QueryClient,
+    32→  QueryClientProvider,
+    33→  useQuery,
+    34→} from '@tanstack/react-query'
+    35→import { AnimatePresence, motion } from 'framer-motion'
+    36→import {
+    37→  AlertTriangle,
+    38→  ClipboardList,
+    39→  Crosshair,
+    40→  ListOrdered,
+    41→  Loader2,
+    42→  RefreshCw,
+    43→  Send,
+    44→  Sparkles,
+    45→} from 'lucide-react'
+    46→
+    47→import { useAppStore } from '@/lib/store'
+    48→import { Button } from '@/components/ui/button'
+    49→import { Card } from '@/components/ui/card'
+    50→import { Skeleton } from '@/components/ui/skeleton'
+    51→import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    52→import {
+    53→  Select,
+    54→  SelectContent,
+    55→  SelectItem,
+    56→  SelectTrigger,
+    57→  SelectValue,
+    58→} from '@/components/ui/select'
+    59→
+    60→import {
+    61→  OpeningScriptView,
+    62→  type OpeningScript,
+    63→} from './opening-script-view'
+    64→import {
+    65→  SituationBuilder,
+    66→  type GenerateSituationParams,
+    67→  type OpponentOption,
+    68→} from './situation-builder'
+    69→import {
+    70→  RecommendationCard,
+    71→  type Recommendation,
+    72→} from './recommendation-card'
+    73→
+    74→// ----------------------------------------------------------------------------
+    75→//  Constants
+    76→// ----------------------------------------------------------------------------
+    77→
+    78→type GamePlanMode = 'opening_script' | 'situation_recommendation'
+    79→
+    80→const STORAGE_PREFIX = 'gridironiq:gameplan'
+    81→
+    82→function storageKey(mode: GamePlanMode, opponentId: string | null): string {
+    83→  return `${STORAGE_PREFIX}:${mode}:${opponentId ?? 'default'}`
+    84→}
+    85→
+    86→// ----------------------------------------------------------------------------
+    87→//  Types — the /api/gameplan response (subset we consume).
+    88→// ----------------------------------------------------------------------------
+    89→
+    90→interface GamePlanResponse {
+    91→  result: unknown
+    92→  opponent: string | null
+    93→  generatedAt: string
+    94→  error?: string
+    95→}
+    96→
+    97→interface GridironListResponse {
+    98→  opponents: OpponentOption[]
+    99→}
+   100→
+   101→// ----------------------------------------------------------------------------
+   102→//  Main module — owns its own React Query client.
+   103→// ----------------------------------------------------------------------------
+   104→
+   105→export default function GamePlanIQ() {
+   106→  const [queryClient] = useState(
+   107→    () =>
+   108→      new QueryClient({
+   109→        defaultOptions: {
+   110→          queries: { staleTime: 60_000, refetchOnWindowFocus: false },
+   111→        },
+   112→      }),
+   113→  )
+   114→
+   115→  return (
+   116→    <QueryClientProvider client={queryClient}>
+   117→      <GamePlanIQBody />
+   118→    </QueryClientProvider>
+   119→  )
+   120→}
+   121→
+   122→// ----------------------------------------------------------------------------
+   123→//  Body — wrapped by the QueryClientProvider above.
+   124→// ----------------------------------------------------------------------------
+   125→
+   126→function GamePlanIQBody() {
+   127→  const [tab, setTab] = useState<GamePlanMode>('opening_script')
+   128→
+   129→  return (
+   130→    <div className="flex flex-col gap-4 p-3 lg:p-4">
+   131→      {/* ============================================================
+   132→          Header — title + tab switcher
+   133→         ============================================================ */}
+   134→      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   135→        <div>
+   136→          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+   137→            GridironIQ™
+   138→          </div>
+   139→          <h2 className="flex items-center gap-2 text-base font-semibold tracking-tight">
+   140→            <ClipboardList className="size-4 text-primary" />
+   141→            GamePlanIQ
+   142→            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+   143→              &trade;
+   144→            </span>
+   145→          </h2>
+   146→          <p className="mt-0.5 text-xs text-muted-foreground">
+   147→            AI opening script + situation play recommendations
+   148→          </p>
+   149→        </div>
+   150→
+   151→        <Tabs
+   152→          value={tab}
+   153→          onValueChange={(v) => setTab(v as GamePlanMode)}
+   154→        >
+   155→          <TabsList>
+   156→            <TabsTrigger value="opening_script" className="gap-1.5">
+   157→              <ListOrdered className="size-3.5" />
+   158→              Opening Script
+   159→            </TabsTrigger>
+   160→            <TabsTrigger value="situation_recommendation" className="gap-1.5">
+   161→              <Crosshair className="size-3.5" />
+   162→              Situation Rec
+   163→            </TabsTrigger>
+   164→          </TabsList>
+   165→        </Tabs>
+   166→      </header>
+   167→
+   168→      {/* ============================================================
+   169→          Tab body — framer-motion fade between tabs.
+   170→         ============================================================ */}
+   171→      <AnimatePresence mode="wait" initial={false}>
+   172→        <motion.div
+   173→          key={tab}
+   174→          initial={{ opacity: 0 }}
+   175→          animate={{ opacity: 1 }}
+   176→          exit={{ opacity: 0 }}
+   177→          transition={{ duration: 0.18, ease: 'easeOut' }}
+   178→        >
+   179→          {tab === 'opening_script' ? (
+   180→            <OpeningScriptTab />
+   181→          ) : (
+   182→            <SituationRecTab />
+   183→          )}
+   184→        </motion.div>
+   185→      </AnimatePresence>
+   186→    </div>
+   187→  )
+   188→}
+   189→
+   190→// ============================================================================
+   191→//  Opening Script tab
+   192→// ============================================================================
+   193→
+   194→function OpeningScriptTab() {
+   195→  const { data } = useGridironList()
+   196→  const opponents = data?.opponents ?? []
+   197→
+   198→  const selectedOpponentId = useAppStore((s) => s.selectedOpponentId)
+   199→  const setSelectedOpponentId = useAppStore((s) => s.setSelectedOpponentId)
+   200→
+   201→  // Derive the effective opponent id — fall back to the first opponent.
+   202→  const currentOpponentId =
+   203→    selectedOpponentId ?? opponents[0]?.id ?? null
+   204→
+   205→  // Persist the derived default back to the store so other modules see it.
+   206→  useEffect(() => {
+   207→    if (currentOpponentId && currentOpponentId !== selectedOpponentId) {
+   208→      setSelectedOpponentId(currentOpponentId)
+   209→    }
+   210→  }, [currentOpponentId, selectedOpponentId, setSelectedOpponentId])
+   211→
+   212→  const currentOpponent = useMemo(
+   213→    () => opponents.find((o) => o.id === currentOpponentId) ?? null,
+   214→    [opponents, currentOpponentId],
+   215→  )
+   216→
+   217→  // State --------------------------------------------------------------
+   218→  const [script, setScript] = useState<OpeningScript | null>(null)
+   219→  const [scriptOpponentName, setScriptOpponentName] = useState<string | null>(
+   220→    null,
+   221→  )
+   222→  const [scriptGeneratedAt, setScriptGeneratedAt] = useState<string | null>(
+   223→    null,
+   224→  )
+   225→  const [scriptPending, setScriptPending] = useState(false)
+   226→  const [scriptError, setScriptError] = useState<string | null>(null)
+   227→  const [hydrated, setHydrated] = useState(false)
+   228→
+   229→  // Hydrate from localStorage on opponent change.
+   230→  useEffect(() => {
+   231→    if (!currentOpponentId) {
+   232→      setScript(null)
+   233→      setScriptOpponentName(null)
+   234→      setScriptGeneratedAt(null)
+   235→      setScriptError(null)
+   236→      setHydrated(true)
+   237→      return
+   238→    }
+   239→    try {
+   240→      const raw = localStorage.getItem(
+   241→        storageKey('opening_script', currentOpponentId),
+   242→      )
+   243→      if (raw) {
+   244→        const parsed = JSON.parse(raw) as {
+   245→          result?: OpeningScript
+   246→          opponent?: string | null
+   247→          generatedAt?: string | null
+   248→        }
+   249→        setScript(validateOpeningScript(parsed.result) ?? null)
+   250→        setScriptOpponentName(parsed.opponent ?? null)
+   251→        setScriptGeneratedAt(parsed.generatedAt ?? null)
+   252→      } else {
+   253→        setScript(null)
+   254→        setScriptOpponentName(null)
+   255→        setScriptGeneratedAt(null)
+   256→      }
+   257→    } catch {
+   258→      setScript(null)
+   259→      setScriptOpponentName(null)
+   260→      setScriptGeneratedAt(null)
+   261→    } finally {
+   262→      setScriptError(null)
+   263→      setHydrated(true)
+   264→    }
+   265→  }, [currentOpponentId])
+   266→
+   267→  // generate ----------------------------------------------------------
+   268→  const generate = useCallback(async () => {
+   269→    if (!currentOpponentId || scriptPending) return
+   270→    setScriptPending(true)
+   271→    setScriptError(null)
+   272→    try {
+   273→      const r = await fetch('/api/gameplan', {
+   274→        method: 'POST',
+   275→        headers: { 'content-type': 'application/json' },
+   276→        body: JSON.stringify({
+   277→          mode: 'opening_script',
+   278→          opponentId: currentOpponentId,
+   279→        }),
+   280→      })
+   281→      const json = (await r.json().catch(() => ({}))) as GamePlanResponse
+   282→      if (!r.ok || json.error) {
+   283→        throw new Error(json.error || `HTTP ${r.status}`)
+   284→      }
+   285→      const validated = validateOpeningScript(json.result)
+   286→      if (!validated) {
+   287→        throw new Error('GamePlanIQ returned malformed JSON.')
+   288→      }
+   289→      setScript(validated)
+   290→      setScriptOpponentName(json.opponent ?? currentOpponent?.name ?? null)
+   291→      setScriptGeneratedAt(json.generatedAt ?? new Date().toISOString())
+   292→      try {
+   293→        localStorage.setItem(
+   294→          storageKey('opening_script', currentOpponentId),
+   295→          JSON.stringify({
+   296→            result: validated,
+   297→            opponent: json.opponent,
+   298→            generatedAt: json.generatedAt,
+   299→          }),
+   300→        )
+   301→      } catch {
+   302→        // localStorage unavailable — ignore.
+   303→      }
+   304→    } catch (e) {
+   305→      setScriptError(e instanceof Error ? e.message : 'Unknown error')
+   306→    } finally {
+   307→      setScriptPending(false)
+   308→    }
+   309→  }, [currentOpponentId, currentOpponent, scriptPending])
+   310→
+   311→  return (
+   312→    <div className="flex flex-col gap-4">
+   313→      {/* Control bar: opponent selector + Generate button */}
+   314→      <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
+   315→        <div className="flex flex-wrap items-center gap-2">
+   316→          <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+   317→            Opponent
+   318→          </span>
+   319→          <Select
+   320→            value={currentOpponentId ?? undefined}
+   321→            onValueChange={(v) => setSelectedOpponentId(v)}
+   322→          >
+   323→            <SelectTrigger className="w-[240px]" aria-label="Select opponent">
+   324→              <SelectValue placeholder="Select opponent…" />
+   325→            </SelectTrigger>
+   326→            <SelectContent>
+   327→              {opponents.map((o) => (
+   328→                <SelectItem key={o.id} value={o.id}>
+   329→                  {o.name}
+   330→                  {o.mascot ? ` ${o.mascot}` : ''}
+   331→                </SelectItem>
+   332→              ))}
+   333→            </SelectContent>
+   334→          </Select>
+   335→        </div>
+   336→
+   337→        <Button
+   338→          onClick={() => void generate()}
+   339→          disabled={scriptPending || !currentOpponentId}
+   340→        >
+   341→          {scriptPending ? (
+   342→            <Loader2 className="size-4 animate-spin" />
+   343→          ) : (
+   344→            <Sparkles className="size-4" />
+   345→          )}
+   346→          {scriptPending ? 'Generating…' : 'Generate Opening Script'}
+   347→        </Button>
+   348→      </div>
+   349→
+   350→      {/* Body */}
+   351→      {scriptError ? (
+   352→        <ErrorState
+   353→          message={scriptError}
+   354→          onRetry={() => void generate()}
+   355→          retryLabel="Retry generation"
+   356→          pending={scriptPending}
+   357→        />
+   358→      ) : (
+   359→        <OpeningScriptView
+   360→          script={script}
+   361→          opponentName={scriptOpponentName ?? currentOpponent?.name ?? null}
+   362→          generatedAt={scriptGeneratedAt}
+   363→          isLoading={scriptPending && !script}
+   364→        />
+   365→      )}
+   366→    </div>
+   367→  )
+   368→}
+   369→
+   370→// ============================================================================
+   371→//  Situation Rec tab
+   372→// ============================================================================
+   373→
+   374→function SituationRecTab() {
+   375→  const { data } = useGridironList()
+   376→  const opponents = data?.opponents ?? []
+   377→
+   378→  const selectedOpponentId = useAppStore((s) => s.selectedOpponentId)
+   379→  const setSelectedOpponentId = useAppStore((s) => s.setSelectedOpponentId)
+   380→
+   381→  const currentOpponentId =
+   382→    selectedOpponentId ?? opponents[0]?.id ?? null
+   383→
+   384→  useEffect(() => {
+   385→    if (currentOpponentId && currentOpponentId !== selectedOpponentId) {
+   386→      setSelectedOpponentId(currentOpponentId)
+   387→    }
+   388→  }, [currentOpponentId, selectedOpponentId, setSelectedOpponentId])
+   389→
+   390→  // State --------------------------------------------------------------
+   391→  const [recs, setRecs] = useState<Recommendation[] | null>(null)
+   392→  const [recsOpponentName, setRecsOpponentName] = useState<string | null>(null)
+   393→  const [recsGeneratedAt, setRecsGeneratedAt] = useState<string | null>(null)
+   394→  const [recsPending, setRecsPending] = useState(false)
+   395→  const [recsError, setRecsError] = useState<string | null>(null)
+   396→
+   397→  // Refs ---------------------------------------------------------------
+   398→  // Last params used to fire the situation API — powers Retry.
+   399→  const lastSituationParamsRef = useRef<GenerateSituationParams | null>(null)
+   400→
+   401→  // Hydrate from localStorage on opponent change.
+   402→  useEffect(() => {
+   403→    if (!currentOpponentId) {
+   404→      setRecs(null)
+   405→      setRecsOpponentName(null)
+   406→      setRecsGeneratedAt(null)
+   407→      setRecsError(null)
+   408→      return
+   409→    }
+   410→    try {
+   411→      const raw = localStorage.getItem(
+   412→        storageKey('situation_recommendation', currentOpponentId),
+   413→      )
+   414→      if (raw) {
+   415→        const parsed = JSON.parse(raw) as {
+   416→          result?: { recommendations?: Recommendation[] }
+   417→          opponent?: string | null
+   418→          generatedAt?: string | null
+   419→        }
+   420→        const list = validateRecommendations(parsed.result)
+   421→        setRecs(list)
+   422→        setRecsOpponentName(parsed.opponent ?? null)
+   423→        setRecsGeneratedAt(parsed.generatedAt ?? null)
+   424→      } else {
+   425→        setRecs(null)
+   426→        setRecsOpponentName(null)
+   427→        setRecsGeneratedAt(null)
+   428→      }
+   429→    } catch {
+   430→      setRecs(null)
+   431→      setRecsOpponentName(null)
+   432→      setRecsGeneratedAt(null)
+   433→    } finally {
+   434→      setRecsError(null)
+   435→    }
+   436→  }, [currentOpponentId])
+   437→
+   438→  // generate ----------------------------------------------------------
+   439→  const generate = useCallback(
+   440→    async (params: GenerateSituationParams) => {
+   441→      if (recsPending) return
+   442→      lastSituationParamsRef.current = params
+   443→      setRecsPending(true)
+   444→      setRecsError(null)
+   445→      try {
+   446→        const r = await fetch('/api/gameplan', {
+   447→          method: 'POST',
+   448→          headers: { 'content-type': 'application/json' },
+   449→          body: JSON.stringify({
+   450→            mode: 'situation_recommendation',
+   451→            opponentId: params.opponentId,
+   452→            situation: params.situation,
+   453→            personnelNotes: params.personnelNotes,
+   454→            coachingGoal: params.coachingGoal,
+   455→          }),
+   456→        })
+   457→        const json = (await r.json().catch(() => ({}))) as GamePlanResponse
+   458→        if (!r.ok || json.error) {
+   459→          throw new Error(json.error || `HTTP ${r.status}`)
+   460→        }
+   461→        const list = validateRecommendations(json.result)
+   462→        if (list === null) {
+   463→          throw new Error('GamePlanIQ returned malformed JSON.')
+   464→        }
+   465→        setRecs(list)
+   466→        setRecsOpponentName(json.opponent ?? null)
+   467→        setRecsGeneratedAt(json.generatedAt ?? new Date().toISOString())
+   468→        try {
+   469→          localStorage.setItem(
+   470→            storageKey('situation_recommendation', params.opponentId),
+   471→            JSON.stringify({
+   472→              result: { recommendations: list },
+   473→              opponent: json.opponent,
+   474→              generatedAt: json.generatedAt,
+   475→            }),
+   476→          )
+   477→        } catch {
+   478→          // ignore
+   479→        }
+   480→      } catch (e) {
+   481→        setRecsError(e instanceof Error ? e.message : 'Unknown error')
+   482→      } finally {
+   483→        setRecsPending(false)
+   484→      }
+   485→    },
+   486→    [recsPending],
+   487→  )
+   488→
+   489→  // Retry handler — uses last params if present, else no-op.
+   490→  const retry = useCallback(() => {
+   491→    const last = lastSituationParamsRef.current
+   492→    if (!last) return
+   493→    void generate(last)
+   494→  }, [generate])
+   495→
+   496→  const currentSituation = useAppStore((s) => s.situation)
+   497→
+   498→  return (
+   499→    <div className="flex flex-col gap-4">
+   500→      <SituationBuilder
+   501→        opponentId={currentOpponentId}
+   502→        opponents={opponents}
+   503→        isPending={recsPending}
+   504→        onGenerate={(p) => void generate(p)}
+   505→      />
+   506→
+   507→      {/* Header for the recommendations section */}
+   508→      <div className="flex items-center gap-2">
+   509→        <Crosshair className="size-3.5 text-muted-foreground" />
+   510→        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   511→          Top 3 Play Recommendations
+   512→        </span>
+   513→        {recsGeneratedAt && (
+   514→          <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+   515→            for {recsOpponentName ?? 'opponent'} · {formatDownDistance(currentSituation.down, currentSituation.distance)} · Q{currentSituation.quarter} ·{' '}
+   516→            {formatTimestamp(recsGeneratedAt)}
+   517→          </span>
+   518→        )}
+   519→      </div>
+   520→
+   521→      {/* Body */}
+   522→      {recsError ? (
+   523→        <ErrorState
+   524→          message={recsError}
+   525→          onRetry={retry}
+   526→          retryLabel="Retry recommendations"
+   527→          pending={recsPending}
+   528→        />
+   529→      ) : recsPending && !recs ? (
+   530→        <RecsSkeleton />
+   531→      ) : recs && recs.length > 0 ? (
+   532→        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+   533→          {[...recs]
+   534→            .sort((a, b) => a.rank - b.rank)
+   535→            .slice(0, 3)
+   536→            .map((r) => (
+   537→              <RecommendationCard
+   538→                key={`${r.playId}-${r.rank}`}
+   539→                recommendation={r}
+   540→              />
+   541→            ))}
+   542→        </div>
+   543→      ) : (
+   544→        <EmptyRecsState />
+   545→      )}
+   546→    </div>
+   547→  )
+   548→}
+   549→
+   550→// ----------------------------------------------------------------------------
+   551→//  Shared: data fetching
+   552→// ----------------------------------------------------------------------------
+   553→
+   554→function useGridironList() {
+   555→  return useQuery<GridironListResponse>({
+   556→    queryKey: ['gridiron'],
+   557→    queryFn: async () => {
+   558→      const r = await fetch('/api/gridiron')
+   559→      if (!r.ok) throw new Error('failed to load gridiron data')
+   560→      return (await r.json()) as GridironListResponse
+   561→    },
+   562→  })
+   563→}
+   564→
+   565→// ----------------------------------------------------------------------------
+   566→//  Shared: error state
+   567→// ----------------------------------------------------------------------------
+   568→
+   569→function ErrorState({
+   570→  message,
+   571→  onRetry,
+   572→  retryLabel,
+   573→  pending,
+   574→}: {
+   575→  message: string
+   576→  onRetry: () => void
+   577→  retryLabel: string
+   578→  pending: boolean
+   579→}) {
+   580→  return (
+   581→    <Card className="flex flex-col items-start gap-3 border-destructive/40 bg-destructive/5 p-4">
+   582→      <div className="flex items-start gap-2">
+   583→        <AlertTriangle className="size-4 shrink-0 mt-0.5 text-destructive" />
+   584→        <div>
+   585→          <div className="font-mono text-[10px] uppercase tracking-widest text-destructive">
+   586→            GamePlanIQ Error
+   587→          </div>
+   588→          <p className="mt-1 text-sm text-foreground/90">{message}</p>
+   589→        </div>
+   590→      </div>
+   591→      <Button variant="outline" size="sm" onClick={onRetry} disabled={pending}>
+   592→        {pending ? (
+   593→          <Loader2 className="size-3.5 animate-spin" />
+   594→        ) : (
+   595→          <RefreshCw className="size-3.5" />
+   596→        )}
+   597→        {retryLabel}
+   598→      </Button>
+   599→    </Card>
+   600→  )
+   601→}
+   602→
+   603→// ----------------------------------------------------------------------------
+   604→//  Shared: skeleton + empty state for situation rec
+   605→// ----------------------------------------------------------------------------
+   606→
+   607→function RecsSkeleton() {
+   608→  return (
+   609→    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+   610→      {Array.from({ length: 3 }).map((_, i) => (
+   611→        <div
+   612→          key={i}
+   613→          className="bg-card border border-border rounded-lg p-4"
+   614→        >
+   615→          <div className="flex items-start gap-3">
+   616→            <Skeleton className="size-8 rounded-full" />
+   617→            <div className="flex-1">
+   618→              <Skeleton className="h-3 w-12 mb-1" />
+   619→              <Skeleton className="h-4 w-32" />
+   620→              <Skeleton className="h-3 w-20 mt-1" />
+   621→            </div>
+   622→          </div>
+   623→          <div className="mt-3 flex flex-col gap-2">
+   624→            <Skeleton className="h-3 w-full" />
+   625→            <Skeleton className="h-3 w-full" />
+   626→            <Skeleton className="h-3 w-3/4" />
+   627→          </div>
+   628→          <Skeleton className="mt-3 h-12 w-full rounded-md" />
+   629→        </div>
+   630→      ))}
+   631→    </div>
+   632→  )
+   633→}
+   634→
+   635→function EmptyRecsState() {
+   636→  return (
+   637→    <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
+   638→      <Crosshair className="size-10 opacity-40" />
+   639→      <p className="text-sm font-medium">No recommendations yet.</p>
+   640→      <p className="max-w-md text-center text-xs">
+   641→        Configure the situation above and click{' '}
+   642→        <span className="inline-flex items-center gap-1 font-medium text-foreground">
+   643→          <Send className="size-3" />
+   644→          Get Recommendations
+   645→        </span>{' '}
+   646→        to surface the top 3 installed plays for this scenario.
+   647→      </p>
+   648→    </div>
+   649→  )
+   650→}
+   651→
+   652→// ----------------------------------------------------------------------------
+   653→//  Validators — coerce untyped LLM JSON into typed shapes; reject malformed
+   654→//  payloads so the UI can render a clean error state.
+   655→// ----------------------------------------------------------------------------
+   656→
+   657→function isString(v: unknown): v is string {
+   658→  return typeof v === 'string'
+   659→}
+   660→
+   661→function isNumber(v: unknown): v is number {
+   662→  return typeof v === 'number' && Number.isFinite(v)
+   663→}
+   664→
+   665→function validateScriptPlay(v: unknown): unknown {
+   666→  // Loose validation — we just need the object to have the expected keys.
+   667→  // The renderer itself guards each field with `|| '—'` so a missing
+   668→  // string field won't crash.
+   669→  if (typeof v !== 'object' || v === null) return null
+   670→  return v
+   671→}
+   672→
+   673→function validateOpeningScript(v: unknown): OpeningScript | null {
+   674→  if (typeof v !== 'object' || v === null) return null
+   675→  const o = v as Record<string, unknown>
+   676→  const playsRaw = Array.isArray(o.plays) ? o.plays : []
+   677→  const plays = playsRaw
+   678→    .map(validateScriptPlay)
+   679→    .filter((p): p is Record<string, unknown> => p !== null)
+   680→  // Don't fail if plays is empty — render the empty-state row instead.
+   681→  return {
+   682→    title: isString(o.title) ? o.title : '',
+   683→    rationale: isString(o.rationale) ? o.rationale : '',
+   684→    plays: plays as unknown as OpeningScript['plays'],
+   685→    complementaryPlan: Array.isArray(o.complementaryPlan)
+   686→      ? (o.complementaryPlan as unknown[]).filter(isString)
+   687→      : [],
+   688→    selfScoutWarning: isString(o.selfScoutWarning) ? o.selfScoutWarning : '',
+   689→  }
+   690→}
+   691→
+   692→function validateRecommendations(
+   693→  v: unknown,
+   694→): Recommendation[] | null {
+   695→  if (typeof v !== 'object' || v === null) return null
+   696→  const o = v as Record<string, unknown>
+   697→  const arr = Array.isArray(o.recommendations) ? o.recommendations : null
+   698→  if (!arr) return null
+   699→  const out: Recommendation[] = []
+   700→  for (const item of arr) {
+   701→    if (typeof item !== 'object' || item === null) continue
+   702→    const r = item as Record<string, unknown>
+   703→    out.push({
+   704→      rank: isNumber(r.rank) ? r.rank : out.length + 1,
+   705→      playId: isString(r.playId) ? r.playId : '',
+   706→      name: isString(r.name) ? r.name : '',
+   707→      concept: isString(r.concept) ? r.concept : '',
+   708→      rationale: isString(r.rationale) ? r.rationale : '',
+   709→      expectedDefensiveReaction: isString(r.expectedDefensiveReaction)
+   710→        ? r.expectedDefensiveReaction
+   711→        : '',
+   712→      complementaryPlay: isString(r.complementaryPlay)
+   713→        ? r.complementaryPlay
+   714→        : '',
+   715→      explanation: isString(r.explanation) ? r.explanation : '',
+   716→    })
+   717→  }
+   718→  return out
+   719→}
+   720→
+   721→// ----------------------------------------------------------------------------
+   722→//  Formatting helpers
+   723→// ----------------------------------------------------------------------------
+   724→
+   725→function formatDownDistance(down: number, distance: number): string {
+   726→  const suffix = (n: number): string => {
+   727→    if (n === 1) return 'st'
+   728→    if (n === 2) return 'nd'
+   729→    if (n === 3) return 'rd'
+   730→    return 'th'
+   731→  }
+   732→  return `${down}${suffix(down)} & ${distance}`
+   733→}
+   734→
+   735→function formatTimestamp(iso: string): string {
+   736→  try {
+   737→    const d = new Date(iso)
+   738→    return d.toLocaleString(undefined, {
+   739→      month: 'short',
+   740→      day: 'numeric',
+   741→      hour: '2-digit',
+   742→      minute: '2-digit',
+   743→    })
+   744→  } catch {
+   745→    return iso
+   746→  }
+   747→}
+   748→

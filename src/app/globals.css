@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* GridironIQ™ — dark, sporty "field + end-zone" theme. Default dark mode.
+   No indigo/blue. Primary = field green. Accent = end-zone orange. */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Dark by default (turf + chalk) */
+  --background: oklch(0.16 0.012 150);
+  --foreground: oklch(0.97 0.005 120);
+
+  --card: oklch(0.205 0.014 150);
+  --card-foreground: oklch(0.97 0.005 120);
+  --popover: oklch(0.225 0.016 150);
+  --popover-foreground: oklch(0.97 0.005 120);
+
+  /* Field green primary */
+  --primary: oklch(0.62 0.16 152);
+  --primary-foreground: oklch(0.985 0.005 120);
+
+  --secondary: oklch(0.28 0.014 150);
+  --secondary-foreground: oklch(0.97 0.005 120);
+
+  --muted: oklch(0.26 0.012 150);
+  --muted-foreground: oklch(0.71 0.012 150);
+
+  /* End-zone orange accent */
+  --accent: oklch(0.68 0.18 55);
+  --accent-foreground: oklch(0.18 0.01 60);
+
+  --destructive: oklch(0.62 0.22 25);
+
+  --border: oklch(0.31 0.012 150);
+  --input: oklch(0.28 0.012 150);
+  --ring: oklch(0.62 0.16 152);
+
+  /* Chart palette — turf, orange, gold, red zone, defensive blue-teal */
+  --chart-1: oklch(0.62 0.16 152);
+  --chart-2: oklch(0.68 0.18 55);
+  --chart-3: oklch(0.78 0.16 90);
+  --chart-4: oklch(0.62 0.22 25);
+  --chart-5: oklch(0.62 0.12 195);
+
+  --sidebar: oklch(0.185 0.014 150);
+  --sidebar-foreground: oklch(0.97 0.005 120);
+  --sidebar-primary: oklch(0.62 0.16 152);
+  --sidebar-primary-foreground: oklch(0.985 0.005 120);
+  --sidebar-accent: oklch(0.26 0.014 150);
+  --sidebar-accent-foreground: oklch(0.97 0.005 120);
+  --sidebar-border: oklch(0.31 0.012 150);
+  --sidebar-ring: oklch(0.62 0.16 152);
+}
+
+.light {
+  --background: oklch(0.985 0.004 120);
+  --foreground: oklch(0.18 0.012 150);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.012 150);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.012 150);
+  --primary: oklch(0.55 0.18 152);
+  --primary-foreground: oklch(0.985 0.005 120);
+  --secondary: oklch(0.96 0.008 150);
+  --secondary-foreground: oklch(0.2 0.012 150);
+  --muted: oklch(0.96 0.008 150);
+  --muted-foreground: oklch(0.45 0.012 150);
+  --accent: oklch(0.7 0.18 55);
+  --accent-foreground: oklch(0.18 0.01 60);
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.9 0.008 150);
+  --input: oklch(0.9 0.008 150);
+  --ring: oklch(0.55 0.18 152);
+  --chart-1: oklch(0.55 0.18 152);
+  --chart-2: oklch(0.7 0.18 55);
+  --chart-3: oklch(0.78 0.16 90);
+  --chart-4: oklch(0.62 0.22 25);
+  --chart-5: oklch(0.5 0.12 195);
+  --sidebar: oklch(0.97 0.005 120);
+  --sidebar-foreground: oklch(0.18 0.012 150);
+  --sidebar-primary: oklch(0.55 0.18 152);
+  --sidebar-primary-foreground: oklch(0.985 0.005 120);
+  --sidebar-accent: oklch(0.96 0.008 150);
+  --sidebar-accent-foreground: oklch(0.2 0.012 150);
+  --sidebar-border: oklch(0.9 0.008 150);
+  --sidebar-ring: oklch(0.55 0.18 152);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+}
+
+/* GridironIQ™ utility classes */
+
+.field-stripes {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 9px,
+      oklch(1 0 0 / 0.025) 9px,
+      oklch(1 0 0 / 0.025) 18px
+    );
+}
+
+.turf-texture {
+  background-color: oklch(0.16 0.012 150);
+  background-image:
+    radial-gradient(circle at 50% 50%, oklch(0.18 0.014 150 / 0.6) 0%, transparent 65%),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 22px, oklch(0.13 0.012 150) 22px, oklch(0.13 0.012 150) 23px);
+}
+
+.glow-ring {
+  box-shadow:
+    0 0 0 1px oklch(0.62 0.16 152 / 0.25),
+    0 0 28px -8px oklch(0.62 0.16 152 / 0.45);
+}
+
+.chalk-divider {
+  background-image: repeating-linear-gradient(
+    90deg,
+    oklch(0.97 0.005 120 / 0.25) 0 8px,
+    transparent 8px 16px
+  );
+  height: 1px;
+}
+
+.helmet-gradient {
+  background: linear-gradient(135deg, oklch(0.62 0.16 152) 0%, oklch(0.5 0.14 165) 100%);
+}
+
+.end-zone {
+  background:
+    repeating-linear-gradient(90deg, oklch(0.68 0.18 55 / 0.18) 0 6px, oklch(0.68 0.18 55 / 0.08) 6px 12px),
+    linear-gradient(180deg, transparent, oklch(0.68 0.18 55 / 0.15));
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.5 0.12 152 / 0.5) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: oklch(0.5 0.12 152 / 0.5);
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.62 0.16 152 / 0.7);
+}
+
+/* Yard-line dashed marker */
+.yard-marker {
+  background-image: repeating-linear-gradient(
+    90deg,
+    oklch(0.97 0.005 120 / 0.35) 0 2px,
+    transparent 2px 8px
+  );
+}
+
+@keyframes spin-field {
+  to { transform: rotate(360deg); }
+}
+.animate-spin-field { animation: spin-field 8s linear infinite; }
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.animate-pulse-soft { animation: pulse-soft 2.4s ease-in-out infinite; }
+
+@keyframes blink-light {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.25; }
+}
+.blink-light { animation: blink-light 1.4s steps(1) infinite; }
