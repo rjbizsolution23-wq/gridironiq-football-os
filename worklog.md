@@ -1414,3 +1414,112 @@ Work Log:
 13. **WeekPlanIQ task editing** — let coaches add/edit/customize weekly tasks (currently read-only seed list).
 14. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
 15. **Command palette data search** — extend palette to search plays, opponents, players, drills (not just module navigation).
+
+---
+Task ID: 14-cron-round-10
+Agent: main (Z.ai Code, cron-triggered webDevReview)
+Task: Tenth 15-min review round — enhance Command Palette with Recent Searches + Data Search
+
+Work Log:
+
+## Project Status Assessment (start of round)
+
+- Dev server healthy on port 3000 (PID 18641). All 24 v1.9 modules render via Agent Browser smoke test.
+- Lint clean (0 errors, 0 warnings).
+- Console clean (no warnings, no errors).
+- Worklog had 15 prior task entries covering v1 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5 + v1.6 + v1.7 + v1.8 + v1.9.
+- 24 modules + 1 global command palette wired across 3 nav groups: Intelligence (9), Planning (9), Operation (6).
+
+## Features Enhanced
+
+### Command Palette: Recent Searches + Data Search (`src/components/gridiron/command-palette.tsx`, rewritten ~630 lines)
+
+#### 1. Recent Searches Section
+- When the palette opens with an empty query, a "RECENT" section appears at the top showing the last 5 navigated items.
+- Each navigation action calls `pushRecent(id)` which prepends the item ID to a localStorage array (keyed `gridironiq:palette:recent`, max 5 items).
+- Recent items show with a History icon in the group header + a "CLEAR" button to wipe history.
+- Recent items are resolved from their IDs:
+  - `nav-*` IDs resolve to the original navItem (with group overridden to 'Recent')
+  - `action-*` IDs resolve to the original actionItem (with group overridden to 'Recent')
+  - `play-*` IDs resolve to the play data (label, playId, concept)
+  - `opp-*` IDs resolve to the opponent data (name, mascot, league)
+- **Verified**: Navigated to MatchupIQ → reopened palette → "RECENT (1)" section appeared with MatchupIQ item + CLEAR button. Persisted across page reload.
+
+#### 2. Data Search (plays, opponents, players, drills)
+- Extended the palette to search across live data from `/api/gridiron`, not just module navigation.
+- When the user types a query, the palette now searches:
+  - **Plays**: by name, playId, or concept → results show in "PLAYS" group with PlayCircle icon + "PLAY" type badge. Clicking sets `selectedPlayId` + navigates to PlaybookIQ.
+  - **Opponents**: by name, mascot, or league → results show in "OPPONENTS" group with Shield icon + "OPPONENT" type badge. Clicking sets `selectedOpponentId` + navigates to ScoutIQ.
+  - **Players**: by name, position, or jersey number → results show in "PLAYERS" group with Users icon + "PLAYER" type badge. Clicking navigates to PersonnelIQ.
+  - **Drills**: by name (from inline 14-drill catalog) → results show in "DRILLS" group with Dumbbell icon + "DRILL" type badge. Clicking navigates to DrillBuilder.
+- Data results are capped at 15 total to keep the palette performant.
+- Each data result has a colored type badge (chart-5 teal when selected, muted when not).
+- **Verified end-to-end**:
+  - Searched "mesh" → "PLAYS (1)" section appeared with "62 Mesh" (OFF-PASS-0310 · mesh · offense) + PLAY badge.
+  - Searched "central" → "OPPONENTS (1)" section appeared with "Central High Wildcats" (Wildcats · Region 4-6A) + OPPONENT badge.
+  - Searched "marcus" → "PLAYERS (1)" section appeared with "Marcus Bell (#9)" (QB · click to open in PersonnelIQ) + PLAYER badge.
+
+#### 3. Visual Design Updates
+- Updated placeholder: "Search modules, plays, opponents, players, drills…" (was "Search modules, actions, or type a command…").
+- Data result groups use chart-5 teal selection color (distinct from Navigate's primary green + Action's accent orange).
+- Type badges on data results: small uppercase mono pills with border, chart-5-foreground when selected, muted when not.
+- Recent section header has History icon + count + CLEAR button.
+- Group headers show item count in parentheses.
+- All groups (Recent, Navigate, Actions, Plays, Opponents, Players, Drills) render conditionally — only show when they have items.
+
+#### 4. Architecture
+- Wrapped `CommandPaletteInner` in a `QueryClientProvider` so the palette can fetch data via React Query without conflicting with module-level QueryClientProviders.
+- `useQuery` with `enabled: open` — only fetches when palette is open, saving network requests.
+- `staleTime: 60_000` — data cached for 1 minute.
+- All search logic in `useMemo` for performance.
+
+## Verification
+
+- `bun run lint`: ✅ clean (0 errors, 0 warnings).
+- Agent Browser smoke test across all 24 modules: ✅ all render, console 100% clean (no warnings, no errors).
+- **Recent searches verified**:
+  - Navigated to MatchupIQ via palette → reopened palette → "RECENT (1)" section appeared with MatchupIQ item + CLEAR button.
+  - Recent state persisted to localStorage (`gridironiq:palette:recent`).
+  - Survived page reload.
+- **Data search verified**:
+  - "mesh" → PLAY (1): 62 Mesh (OFF-PASS-0310 · mesh · offense).
+  - "central" → OPPONENTS (1): Central High Wildcats (Wildcats · Region 4-6A).
+  - "marcus" → PLAYERS (1): Marcus Bell (#9) (QB · click to open in PersonnelIQ).
+- All data results have correct type badges + descriptions.
+- Screenshots captured: `/tmp/qa-palette-recent.png`, `/tmp/qa-palette-data.png`.
+
+## Stage Summary
+
+### Current project status
+- **24 modules** fully wired + **1 enhanced global command palette** with recent searches + data search.
+- All modules render and function end-to-end.
+- Lint: clean. Console: clean. No runtime errors.
+- Total module source files: 43 (unchanged — command-palette.tsx was rewritten, not added).
+
+### Completed modifications
+- Command palette rewritten from ~320 lines to ~630 lines.
+- Recent searches: last 5 navigated items with localStorage persistence + CLEAR button.
+- Data search: plays + opponents + players + drills with type badges + cross-module navigation.
+- Visual: 3 distinct selection colors (primary green for Navigate, accent orange for Actions, chart-5 teal for data/recent).
+- Updated placeholder text to reflect new search capabilities.
+- QueryClientProvider wrapper for data fetching.
+
+### Unresolved issues / risks
+- None blocking. All bugs fixed, all features work, lint+console clean.
+
+### Priority recommendations for next round
+1. **Real film upload** — accept video file uploads (currently FilmIQ uses text descriptions only). Use VLM skill to analyze video frames and auto-tag.
+2. **POST persistence API** — let coaches save edited Formation Lab diagrams, PersonnelIQ availability, FilmIQ clips, DrillBuilder custom drills, CallSheet edits, and WeekPlanIQ tasks back to the DB.
+3. **Real auth + multi-tenant isolation** — NextAuth.js v4 is installed; add coach/analyst/player roles per the original product vision.
+4. **PDF export** — server-side PDF generation for CallSheet, Wristband, FilmIQ clip reports, DrillBuilder practice plans, and WeekPlanIQ weekly schedules using the pdf skill.
+5. **Drag-and-drop player repositioning in Formation Lab** — restore the original drag-and-drop intent (currently click-to-select only).
+6. **TwoMinuteIQ opponent mode** — let coach simulate defending a 2-minute drive.
+7. **Quiz mode in FilmIQ** — show a film clip, quiz player on the concept/coverage/result.
+8. **Shareable deep links** — encode filter state in URL for SituationalIQ + TendencyLab + SelfScoutIQ so coaches can share specific views.
+9. **MatchupIQ historical accuracy tracking** — log predicted vs actual scores over time to calibrate the model.
+10. **DrillBuilder → PracticeIQ drag-and-drop** — let coaches drag drills from Quick Drills panel directly into practice periods.
+11. **Cross-module intelligence sharing** — SelfScoutIQ warnings could feed into MatchupIQ predictions as additional context.
+12. **WeekPlanIQ task editing** — let coaches add/edit/customize weekly tasks (currently read-only seed list).
+13. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
+14. **Command palette fuzzy search** — upgrade from simple includes() to fuzzy matching (e.g., fuse.js) for better results.
+15. **Command palette keyboard shortcuts** — add direct shortcuts like Cmd+1 for dashboard, Cmd+2 for playbook, etc.
