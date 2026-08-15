@@ -311,8 +311,8 @@ function CallSheetMain() {
           <div className="flex items-center gap-2 flex-wrap">
             {sheets.length > 1 && (
               <Select
-                value={sheet.id}
-                onValueChange={(v) => setSelectedSheetId(v)}
+                value={sheet?.id ?? ''}
+                onValueChange={(v) => v && setSelectedSheetId(v)}
               >
                 <SelectTrigger className="w-44 h-8">
                   <SelectValue placeholder="Select call sheet" />

@@ -6,6 +6,7 @@ import {
   Activity,
   ArrowRight,
   Brain,
+  CalendarClock,
   ClipboardList,
   Crosshair,
   Dumbbell,
@@ -13,9 +14,11 @@ import {
   ListChecks,
   PlayCircle,
   Shield,
+  Sparkles,
   Target,
   TrendingUp,
   Users,
+  Watch,
   Zap,
 } from 'lucide-react'
 
@@ -114,6 +117,20 @@ const MODULE_CARDS: Array<{
     accent: 'text-primary',
   },
   {
+    id: 'wristband',
+    label: 'WristbandIQ',
+    description: 'Compact QB wristband call sheet',
+    icon: <Watch className="size-5" />,
+    accent: 'text-accent',
+  },
+  {
+    id: 'practice',
+    label: 'PracticeIQ',
+    description: 'Auto-generated practice scripts',
+    icon: <CalendarClock className="size-5" />,
+    accent: 'text-chart-5',
+  },
+  {
     id: 'analytics',
     label: 'AnalyticsIQ',
     description: 'Postgame intelligence & self-scout',
@@ -133,6 +150,13 @@ const MODULE_CARDS: Array<{
     description: 'Installation schedule & player mastery',
     icon: <GraduationCap className="size-5" />,
     accent: 'text-primary',
+  },
+  {
+    id: 'quiz',
+    label: 'PlayerQuiz',
+    description: 'Interactive playbook recall quizzes',
+    icon: <Sparkles className="size-5" />,
+    accent: 'text-accent',
   },
 ]
 
@@ -181,31 +205,43 @@ function DashboardMain() {
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6">
+      <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6 stadium-sweep glow-primary-soft">
         <div className="absolute inset-0 turf-texture opacity-50" />
+        <div className="absolute inset-0 field-grid-overlay opacity-60" />
+        {/* Decorative yard-line accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 yard-marker opacity-60" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground font-mono mb-1.5">
-              <Activity className="size-3.5 text-primary" />
-              Football Intelligence Operating System
+          <div className="flex items-start gap-3">
+            {/* Animated helmet icon */}
+            <div className="relative">
+              <div className="size-14 rounded-xl helmet-gradient flex items-center justify-center shadow-lg helmet-shine">
+                <Activity className="size-7 text-primary-foreground" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 size-3.5 rounded-full bg-accent border-2 border-card animate-pulse-soft" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold leading-tight">
-              {team?.name ?? 'Your Team'}
-              <span className="text-primary">™</span>
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Philosophy:{' '}
-              <span className="font-mono text-foreground">
-                {team?.philosophy ?? 'n/a'}
-              </span>{' '}
-              · {offensePlays.length} offensive plays ·{' '}
-              {defensePlays.length} defensive calls installed
-            </p>
+            <div>
+              <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground font-mono mb-1.5">
+                <Activity className="size-3.5 text-primary" />
+                Football Intelligence Operating System
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+                <span className="gradient-text-primary">{team?.name ?? 'Your Team'}</span>
+                <span className="text-primary">™</span>
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Philosophy:{' '}
+                <Badge variant="outline" className="font-mono text-[10px] border-primary/30 text-primary bg-primary/5">
+                  {team?.philosophy ?? 'n/a'}
+                </Badge>{' '}
+                · {offensePlays.length} offensive plays ·{' '}
+                {defensePlays.length} defensive calls installed
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
               onClick={() => setActiveModule('coach-ai')}
-              className="bg-accent text-accent-foreground hover:bg-accent/90"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 glow-accent"
             >
               <Brain className="size-4 mr-1.5" />
               Ask Coach AI
@@ -213,6 +249,7 @@ function DashboardMain() {
             <Button
               variant="outline"
               onClick={() => setActiveModule('gameplan')}
+              className="border-primary/40 hover:border-primary hover:bg-primary/5"
             >
               <Target className="size-4 mr-1.5" />
               Build Game Plan
@@ -223,7 +260,7 @@ function DashboardMain() {
 
       {/* KPI summary strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-4">
+        <Card className="p-4 slide-up-fade stagger-1 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
               Total Plays
@@ -237,7 +274,7 @@ function DashboardMain() {
             {summary.passRunRatio.pass}P / {summary.passRunRatio.run}R
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 slide-up-fade stagger-2 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
               Yards / Play
@@ -251,7 +288,7 @@ function DashboardMain() {
             season average
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 slide-up-fade stagger-3 hover:border-chart-3/30 hover:shadow-lg hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
               Success Rate
@@ -265,7 +302,7 @@ function DashboardMain() {
             season average
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 slide-up-fade stagger-4 hover:border-accent/30 hover:shadow-lg hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
               Explosives
@@ -299,11 +336,14 @@ function DashboardMain() {
                 <button
                   key={m.id}
                   onClick={() => setActiveModule(m.id)}
-                  className="group flex items-center gap-3 rounded-lg border border-border bg-background/40 hover:bg-primary/5 hover:border-primary/40 p-3 transition-all text-left"
+                  className={cn(
+                    'group flex items-center gap-3 rounded-lg border border-border bg-background/40 hover:bg-primary/5 hover:border-primary/40 hover:shadow-md p-3 transition-all text-left slide-up-fade',
+                    `stagger-${(MODULE_CARDS.indexOf(m) % 6) + 1}`
+                  )}
                 >
                   <div
                     className={cn(
-                      'size-9 rounded-md bg-muted flex items-center justify-center transition-colors group-hover:bg-primary group-hover:text-primary-foreground',
+                      'size-9 rounded-md bg-muted flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110',
                       m.accent
                     )}
                   >
@@ -315,7 +355,7 @@ function DashboardMain() {
                       {m.description}
                     </div>
                   </div>
-                  <ArrowRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </button>
               ))}
             </div>

@@ -904,8 +904,8 @@ function DesignerMain() {
                 Loaded play
               </label>
               <Select
-                value={selectedPlay?.id}
-                onValueChange={(v) => setSelectedPlayId(v)}
+                value={selectedPlay?.id ?? ''}
+                onValueChange={(v) => v && setSelectedPlayId(v)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Pick a play to diagram" />

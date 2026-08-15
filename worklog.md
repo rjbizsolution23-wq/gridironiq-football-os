@@ -365,3 +365,125 @@ Stage Summary:
 - Files produced by main agent: page.tsx, dashboard.tsx, install-iq.tsx, callsheet-iq.tsx, play-designer.tsx (self-built after subagent timed out), theme-provider.tsx, lib/store.ts, lib/data.ts, app/api/gridiron/route.ts, app/api/coach-ai/route.ts, app/api/gameplan/route.ts, app/globals.css (theme), app/layout.tsx.
 - Lint: ✅ clean (0 errors, 0 warnings).
 - Next steps recommendation: future enhancements could include (1) actual play persistence via POST /api/plays, (2) drag-and-drop player repositioning in Formation Lab, (3) film upload + VLM-based tagging for FilmIQ, (4) multiplayer-style quiz mode in PlayerIQ, (5) real auth + multi-tenant isolation.
+
+---
+Task ID: 5-cron-round-1
+Agent: main (Z.ai Code, cron-triggered webDevReview)
+Task: First 15-min review round — assess project status, run QA, fix bugs, add new features, polish styling
+
+Work Log:
+
+## Project Status Assessment (start of round)
+
+- Dev server healthy on port 3000 (PID 7436). All 9 existing modules render via Agent Browser smoke test.
+- Lint clean (0 errors, 0 warnings).
+- One console warning found during QA: "Select is changing from uncontrolled to controlled" — appearing in CallSheetIQ and other modules using `value={x ?? undefined}`.
+- No runtime errors, no hydration mismatches.
+- Worklog had 5 prior task entries (1-seed, 2-a, 2-c, 2-d, 3-a, 3-c, 4) covering the full v1 build.
+
+## Bugs Fixed
+
+1. **Select uncontrolled→controlled warning** (5 files):
+   - `callsheet-iq.tsx`: changed `value={sheet.id}` → `value={sheet?.id ?? ''}` + null-guard on onValueChange.
+   - `scout-iq.tsx`: changed `value={currentOpponentId ?? undefined}` → `value={currentOpponentId ?? ''}` + null-guard.
+   - `situation-builder.tsx`: same pattern fix.
+   - `gameplan-iq.tsx`: same pattern fix.
+   - `play-designer.tsx`: same pattern fix.
+   - Result: console is now completely clean (verified via agent-browser).
+
+## New Features Built (3 new modules — v1.1)
+
+### PlayerQuiz™ (`src/components/gridiron/player-quiz.tsx`, ~520 lines)
+- Interactive play-recall quiz with auto-generated questions from the team's installed playbook.
+- **5 question types**: Assignment recall, Concept ID, vs Coverage, Motion recognition, Complementary play knowledge.
+- Quiz flow: idle → running (10 questions, 4 options each) → finished (grade A-F, % score, per-question review with explanations).
+- Animated question transitions via framer-motion AnimatePresence.
+- Color-coded difficulty badges (Easy/Medium/Hard).
+- Score tracking during quiz, explanation callout after each answer.
+- Room Mastery Leaderboard: groups players into QB/RB/WR/TE/OL/DL/LB/DB rooms by position, shows average mastery + per-player ranking with Trophy icon for #1.
+- Question Types reference card explaining each type.
+- Powered by deterministic `buildQuiz(plays, questionCount)` — no LLM call, instant.
+
+### WristbandIQ™ (`src/components/gridiron/wristband-iq.tsx`, ~330 lines)
+- Generates a compact QB-wristband call sheet — personnel × play grid, color-coded rows.
+- Auto-generates 3-letter wristband codes from concept (e.g. "IZG" for Inside Zone Glance RPO).
+- 6 personnel groups (10, 11, 12, 21, 22, 23), up to 4 plays per row.
+- Color-coded left borders per row (rotating: green, gold, orange, teal).
+- 3 density modes: Compact (youth-friendly large text), Standard (HS), Large (college).
+- Filter: All plays / RPO only / Pass only / Run only.
+- Print view + JSON export.
+- Paper-friendly white background with black text when printing.
+- Usage notes card explaining how to use the wristband.
+
+### PracticeIQ™ (`src/components/gridiron/practice-iq.tsx`, ~410 lines)
+- Auto-generates practice scripts with periods, drills, and performance tie-ins.
+- 3 built-in templates: Game Week Tuesday Install (110 min, 8 periods), Padless Monday Walkthrough (75 min, 5 periods), Thursday Final Polish (80 min, 6 periods).
+- Each period has: time, duration, name, group (team/offense/defense/special), icon, color, and 4-5 drill items.
+- Vertical timeline UI with connector dots, color-coded by group.
+- Stats strip: Total Duration, Periods count, Drills count, Performance gaps count.
+- Practice Recommendations panel: auto-derives top 5 underperforming concepts (success rate < 50% with ≥2 attempts) and recommends which practice period to add reps to (Skelly / Routes on Air / Inside Run based on concept type).
+- Install plan reference card in right rail showing both install days.
+
+## Wiring & Integration
+
+- `lib/store.ts`: Added `quiz`, `wristband`, `practice` to ModuleId union type.
+- `app/page.tsx`: Added 3 new lazy-loaded module imports + nav items with `NEW` badges. Updated SidebarContent to render badges (active=accent pill, inactive=accent/20 outlined pill). Added hover translate-x-0.5 micro-interaction on nav items. New `AnimatedModuleRouter` wraps ModuleRouter in `framer-motion AnimatePresence mode="wait"` with 220ms opacity+y transition.
+- `components/gridiron/dashboard.tsx`: Added 3 new cards to MODULE_CARDS launchpad (WristbandIQ, PracticeIQ, PlayerQuiz). Enhanced hero with: stadium-sweep animation, helmet-shine animated gradient, field-grid-overlay, gradient-text-primary on team name, glow-primary-soft box-shadow, yard-marker top accent. KPI cards now have stagger-1..4 slide-up-fade animation + hover lift effect. Module launchpad cards have hover scale-110 on icon + hover shadow + slide-up-fade stagger.
+
+## Styling Polish (globals.css)
+
+- Body background: added subtle radial gradients (top-left field green, bottom-right end-zone orange) for atmospheric depth on dark theme.
+- Focus-visible: 2px primary-green ring with offset, polished accessibility.
+- Selection color: green-tinted highlight.
+- New utility classes:
+  - `glass-card` — backdrop-blur translucent card.
+  - `glow-accent` / `glow-primary-soft` — colored box-shadows for emphasis.
+  - `gradient-text-primary` / `gradient-text-accent` — gradient text fills.
+  - `helmet-shine` — sweeping shine animation across helmet-gradient elements.
+  - `slide-up-fade` + `stagger-1..6` — staggered entrance animations.
+  - `stadium-sweep` — conic-gradient slow rotation for hero cards.
+  - `field-grid-overlay` — subtle 24px grid pattern overlay.
+- `@media print` block: white background, hide `.print:hidden`, full-width print containers for WristbandIQ and CallSheetIQ.
+- Sticky footer enhanced: animated helmet logo with shine, separator, "12 modules · LLM-powered" stat.
+
+## Verification
+
+- `bun run lint`: ✅ clean (0 errors, 0 warnings).
+- `bunx tsc --noEmit`: clean for new files.
+- Agent Browser smoke test across all 12 modules: ✅ all render, console is now 100% clean (no warnings, no errors).
+- Real Coach AI interaction verified in prior round; new modules don't trigger any LLM calls (PlayerQuiz + WristbandIQ + PracticeIQ are deterministic).
+- Sticky footer verified still pushing to bottom of document.
+- Mobile responsive verified at 390x844 viewport.
+- Screenshots captured: `/tmp/qa-polished-dashboard.png`, `/tmp/qa-polished-wristband.png`, `/tmp/qa-polished-practice.png`, `/tmp/qa-polished-quiz.png`, `/tmp/qa-polished-mobile.png`.
+
+## Stage Summary
+
+### Current project status
+- 12 modules fully wired (was 9, added 3 new): Command Center, PlaybookIQ, Formation Lab, ScoutIQ, Coach AI, GamePlanIQ, CallSheetIQ, **WristbandIQ (NEW)**, **PracticeIQ (NEW)**, AnalyticsIQ, InstallIQ, **PlayerQuiz (NEW)**.
+- All modules render and function end-to-end.
+- Lint: clean. Console: clean. No runtime errors.
+- Total module source files: 30 (was 27).
+
+### Completed modifications
+- 5 Select-control bugs fixed (uncontrolled→controlled warning eliminated).
+- 3 new modules built (~1,260 lines of new component code).
+- Dashboard hero visually enhanced (stadium sweep, helmet shine, gradient text, glow shadows).
+- KPI cards + module launchpad cards have staggered entrance + hover lift animations.
+- Sidebar nav has NEW badges + hover translate-x.
+- Module-to-module transition animation via AnimatePresence.
+- Sticky footer redesigned with helmet logo + module count stat.
+- Print CSS added for Wristband + CallSheet.
+- Body background subtle gradients added.
+
+### Unresolved issues / risks
+- None blocking. All bugs fixed, all features work, lint+console clean.
+
+### Priority recommendations for next round
+1. **FilmIQ module** — film upload + AI-assisted tagging using VLM skill (z-ai-web-dev-sdk). Coaches upload practice/game film, system tags formations/concepts/outcomes.
+2. **PersonnelIQ module** — deeper roster management: depth chart, injury status, availability matrix, position-specific stats.
+3. **Two-Minute Drill simulator** — interactive game-clock simulator for end-of-half situations (Coach picks plays, clock ticks, down/distance updates).
+4. **Play persistence via POST API** — let coaches save edited Formation Lab diagrams back to the DB.
+5. **Real auth + multi-tenant isolation** — NextAuth.js v4 is installed; add coach/analyst/player roles per the original product vision.
+6. **Export CallSheet to PDF** — add a server-side PDF generation route using the pdf skill for printable call sheets.
+7. **Drag-and-drop player repositioning in Formation Lab** — restore the original drag-and-drop intent (currently click-to-select only).
+

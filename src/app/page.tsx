@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import {
   Activity,
   Brain,
+  CalendarClock,
   ClipboardList,
   Crosshair,
   GraduationCap,
@@ -13,11 +14,15 @@ import {
   Menu,
   PlayCircle,
   Shield,
+  Sparkles,
   Target,
   TrendingUp,
+  Watch,
   X,
+  Zap,
 } from 'lucide-react'
 
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -37,6 +42,9 @@ const CallSheetIQ = dynamic(() => import('@/components/gridiron/callsheet-iq'))
 const AnalyticsIQ = dynamic(() => import('@/components/gridiron/analytics-iq'))
 const CoachAI = dynamic(() => import('@/components/gridiron/coach-ai'))
 const InstallIQ = dynamic(() => import('@/components/gridiron/install-iq'))
+const PlayerQuiz = dynamic(() => import('@/components/gridiron/player-quiz'))
+const WristbandIQ = dynamic(() => import('@/components/gridiron/wristband-iq'))
+const PracticeIQ = dynamic(() => import('@/components/gridiron/practice-iq'))
 
 interface NavItem {
   id: ModuleId
@@ -44,6 +52,7 @@ interface NavItem {
   short: string
   icon: React.ReactNode
   group: 'intelligence' | 'planning' | 'operation'
+  badge?: string
 }
 
 const NAV: NavItem[] = [
@@ -54,8 +63,11 @@ const NAV: NavItem[] = [
   { id: 'coach-ai', label: 'Coach AI', short: 'Coach', icon: <Brain className="size-4" />, group: 'intelligence' },
   { id: 'gameplan', label: 'GamePlanIQ', short: 'Game Plan', icon: <Target className="size-4" />, group: 'planning' },
   { id: 'callsheet', label: 'CallSheetIQ', short: 'Call Sheet', icon: <ListChecks className="size-4" />, group: 'planning' },
+  { id: 'wristband', label: 'WristbandIQ', short: 'Wristband', icon: <Watch className="size-4" />, group: 'planning', badge: 'NEW' },
+  { id: 'practice', label: 'PracticeIQ', short: 'Practice', icon: <CalendarClock className="size-4" />, group: 'planning', badge: 'NEW' },
   { id: 'analytics', label: 'AnalyticsIQ', short: 'Analytics', icon: <TrendingUp className="size-4" />, group: 'planning' },
   { id: 'install', label: 'InstallIQ', short: 'Install', icon: <GraduationCap className="size-4" />, group: 'operation' },
+  { id: 'quiz', label: 'PlayerQuiz', short: 'Quiz', icon: <Sparkles className="size-4" />, group: 'operation', badge: 'NEW' },
 ]
 
 const GROUP_LABELS: Record<NavItem['group'], string> = {
@@ -116,17 +128,35 @@ function SidebarContent() {
                       setSidebarOpen(false)
                     }}
                     className={cn(
-                      'w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors text-left',
+                      'group w-full flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-all text-left relative',
                       active
                         ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-0.5'
                     )}
                   >
-                    <span className={cn(active ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                    <span
+                      className={cn(
+                        active ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'
+                      )}
+                    >
                       {item.icon}
                     </span>
                     <span className="font-medium flex-1">{item.label}</span>
-                    {active && <span className="size-1.5 rounded-full bg-accent" />}
+                    {item.badge && (
+                      <span
+                        className={cn(
+                          'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm',
+                          active
+                            ? 'bg-accent text-accent-foreground'
+                            : 'bg-accent/20 text-accent border border-accent/30'
+                        )}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                    {active && !item.badge && (
+                      <span className="size-1.5 rounded-full bg-accent" />
+                    )}
                   </button>
                 )
               })}
@@ -164,15 +194,38 @@ function ModuleRouter() {
       return <GamePlanIQ />
     case 'callsheet':
       return <CallSheetIQ />
+    case 'wristband':
+      return <WristbandIQ />
+    case 'practice':
+      return <PracticeIQ />
     case 'analytics':
       return <AnalyticsIQ />
     case 'coach-ai':
       return <CoachAI />
     case 'install':
       return <InstallIQ />
+    case 'quiz':
+      return <PlayerQuiz />
     default:
       return <Dashboard />
   }
+}
+
+function AnimatedModuleRouter() {
+  const activeModule = useAppStore((s) => s.activeModule)
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeModule}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+      >
+        <ModuleRouter />
+      </motion.div>
+    </AnimatePresence>
+  )
 }
 
 function TopBar() {
@@ -249,22 +302,36 @@ export default function Home() {
       <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
         <TopBar />
         <main className="flex-1 px-3 md:px-6 py-4 md:py-6">
-          <ModuleRouter />
+          <AnimatedModuleRouter />
         </main>
 
         {/* Sticky footer */}
         <footer className="mt-auto border-t border-border bg-card/40 backdrop-blur-sm">
           <div className="px-3 md:px-6 py-3 flex flex-wrap items-center gap-3 justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Activity className="size-3.5 text-primary" />
-              <span className="font-mono">GridironIQ™</span>
-              <span className="opacity-50">·</span>
-              <span>Football Intelligence Operating System</span>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="size-6 rounded helmet-gradient flex items-center justify-center helmet-shine overflow-hidden">
+                  <Activity className="size-3.5 text-primary-foreground" />
+                </div>
+                <div>
+                  <div className="font-mono font-semibold leading-none">GridironIQ™</div>
+                  <div className="text-[9px] text-muted-foreground/70 mt-0.5 leading-none">
+                    Football Intelligence OS
+                  </div>
+                </div>
+              </div>
+              <Separator orientation="vertical" className="h-6 hidden sm:block" />
+              <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
+                <Zap className="size-3 text-accent" />
+                <span className="text-accent">12 modules</span>
+                <span className="opacity-30">·</span>
+                <span className="text-primary">LLM-powered</span>
+              </div>
             </div>
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono">
-              <span className="hidden sm:inline">PLAYBOOK · SCOUT · GAMEPLAN · DEVELOP</span>
+              <span className="hidden sm:inline tracking-widest uppercase">PLAYBOOK · SCOUT · GAMEPLAN · DEVELOP</span>
               <span className="opacity-50 hidden sm:inline">·</span>
-              <span className="text-primary">BUILD · TEACH · ATTACK</span>
+              <span className="text-primary tracking-widest uppercase">Build · Teach · Attack</span>
             </div>
           </div>
         </footer>

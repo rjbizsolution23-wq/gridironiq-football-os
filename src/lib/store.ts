@@ -17,6 +17,9 @@ export type ModuleId =
   | 'coach-ai'
   | 'install'
   | 'personnel'
+  | 'quiz'
+  | 'wristband'
+  | 'practice'
 
 export interface UINotice {
   id: string

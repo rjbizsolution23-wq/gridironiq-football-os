@@ -221,8 +221,8 @@ export function SituationBuilder({
         <div className="space-y-1">
           <Label className="text-[11px] text-muted-foreground">Opponent</Label>
           <Select
-            value={opponentId ?? undefined}
-            onValueChange={(v) => setSelectedOpponentId(v)}
+            value={opponentId ?? ''}
+            onValueChange={(v) => v && setSelectedOpponentId(v)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select…" />

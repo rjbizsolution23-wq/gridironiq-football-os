@@ -136,6 +136,21 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
+    background-image:
+      radial-gradient(circle at 0% 0%, oklch(0.2 0.014 150 / 0.45) 0%, transparent 35%),
+      radial-gradient(circle at 100% 100%, oklch(0.2 0.018 55 / 0.18) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+  /* Improved focus ring */
+  *:focus-visible {
+    outline: 2px solid oklch(0.62 0.16 152 / 0.7);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Selection color */
+  ::selection {
+    background-color: oklch(0.62 0.16 152 / 0.35);
+    color: oklch(0.97 0.005 120);
   }
 }
 
@@ -228,3 +243,126 @@
   61%, 100% { opacity: 0.25; }
 }
 .blink-light { animation: blink-light 1.4s steps(1) infinite; }
+
+/* Extra polish utilities */
+
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    oklch(0.225 0.014 150 / 0.85) 0%,
+    oklch(0.205 0.014 150 / 0.7) 100%
+  );
+  backdrop-filter: blur(12px);
+  border: 1px solid oklch(0.4 0.012 150 / 0.4);
+}
+
+.glow-accent {
+  box-shadow:
+    0 0 0 1px oklch(0.68 0.18 55 / 0.3),
+    0 0 22px -6px oklch(0.68 0.18 55 / 0.5);
+}
+
+.glow-primary-soft {
+  box-shadow: 0 4px 22px -8px oklch(0.62 0.16 152 / 0.45);
+}
+
+.gradient-text-primary {
+  background: linear-gradient(135deg, oklch(0.7 0.16 152) 0%, oklch(0.62 0.18 152) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-text-accent {
+  background: linear-gradient(135deg, oklch(0.75 0.18 55) 0%, oklch(0.68 0.18 65) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.helmet-shine {
+  position: relative;
+  overflow: hidden;
+}
+.helmet-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(1 0 0 / 0.25),
+    transparent
+  );
+  animation: shine-sweep 4s ease-in-out infinite;
+}
+@keyframes shine-sweep {
+  0%, 100% { left: -100%; }
+  50% { left: 160%; }
+}
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.slide-up-fade {
+  animation: slide-up-fade 0.35s ease-out;
+}
+
+.stagger-1 { animation-delay: 0.05s; animation-fill-mode: both; }
+.stagger-2 { animation-delay: 0.1s; animation-fill-mode: both; }
+.stagger-3 { animation-delay: 0.15s; animation-fill-mode: both; }
+.stagger-4 { animation-delay: 0.2s; animation-fill-mode: both; }
+.stagger-5 { animation-delay: 0.25s; animation-fill-mode: both; }
+.stagger-6 { animation-delay: 0.3s; animation-fill-mode: both; }
+
+/* Print styles for Wristband & CallSheet */
+@media print {
+  body {
+    background: white !important;
+  }
+  .print\:hidden { display: none !important; }
+  .callsheet-print {
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+/* Stadium light sweep on hero cards */
+.stadium-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.stadium-sweep::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    oklch(0.62 0.16 152 / 0.05) 30deg,
+    transparent 60deg,
+    transparent 360deg
+  );
+  animation: stadium-rotate 12s linear infinite;
+  pointer-events: none;
+}
+@keyframes stadium-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Field grid overlay for hero */
+.field-grid-overlay {
+  background-image:
+    linear-gradient(oklch(0.97 0.005 120 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.97 0.005 120 / 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+

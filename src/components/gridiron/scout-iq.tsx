@@ -153,8 +153,8 @@ function ScoutIQBody() {
           </div>
 
           <Select
-            value={currentOpponentId ?? undefined}
-            onValueChange={(v) => setSelectedOpponentId(v)}
+            value={currentOpponentId ?? ''}
+            onValueChange={(v) => v && setSelectedOpponentId(v)}
           >
             <SelectTrigger
               className="w-[260px]"

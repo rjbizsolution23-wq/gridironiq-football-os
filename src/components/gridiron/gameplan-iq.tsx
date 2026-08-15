@@ -317,8 +317,8 @@ function OpeningScriptTab() {
             Opponent
           </span>
           <Select
-            value={currentOpponentId ?? undefined}
-            onValueChange={(v) => setSelectedOpponentId(v)}
+            value={currentOpponentId ?? ''}
+            onValueChange={(v) => v && setSelectedOpponentId(v)}
           >
             <SelectTrigger className="w-[240px]" aria-label="Select opponent">
               <SelectValue placeholder="Select opponent…" />
