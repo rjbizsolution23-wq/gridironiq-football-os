@@ -21,6 +21,8 @@ export type ModuleId =
   | 'wristband'
   | 'practice'
   | 'twominute'
+  | 'film'
+  | 'redzone'
 
 export interface UINotice {
   id: string

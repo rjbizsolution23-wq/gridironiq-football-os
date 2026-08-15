@@ -595,3 +595,104 @@ Work Log:
 6. **Drag-and-drop player repositioning in Formation Lab** — restore the original drag-and-drop intent (currently click-to-select only).
 7. **AI-powered opponent scout summary** — use LLM to generate a natural-language scouting report from the deterministic tendency data.
 8. **TwoMinuteIQ opponent mode** — let coach simulate defending a 2-minute drive (pick defensive calls, see opponent offensive outcomes).
+
+---
+Task ID: 7-cron-round-3
+Agent: main (Z.ai Code, cron-triggered webDevReview)
+Task: Third 15-min review round — assess project status, run QA, add new modules, polish styling
+
+Work Log:
+
+## Project Status Assessment (start of round)
+
+- Dev server healthy on port 3000 (PID 7436). All 14 v1.2 modules render via Agent Browser smoke test.
+- Lint clean (0 errors, 0 warnings).
+- Console clean (no warnings, no errors).
+- Worklog had 8 prior task entries (1-seed, 2-a, 2-c, 2-d, 3-a, 3-c, 4, 5-cron-round-1, 6-cron-round-2) covering v1 + v1.1 + v1.2.
+- 14 modules wired across 3 nav groups: Intelligence (5), Planning (5), Operation (4).
+
+## New Features Built (2 new modules — v1.3)
+
+### FilmIQ™ (`src/components/gridiron/film-iq.tsx`, ~510 lines)
+- AI-powered film tagging library. Coach describes a clip in plain English, the LLM auto-tags personnel/formation/motion/concept/coverage/pressure/result/yards.
+- **New API route** (`/api/film-tag/route.ts`, ~135 lines): POST endpoint that takes `{ description, title?, opponentId? }`, calls z-ai-web-dev-sdk with a strict JSON system prompt, returns structured tags. Includes live playbook catalog + opponent names as grounding context.
+- **Hero header**: stadium-sweep, helmet-shine Clapperboard icon, gradient team name, live stats summary (clips count, explosive, turnovers, avg yards).
+- **Stats strip (5 tiles)**: Total Clips, Explosive, Turnovers, Pass/Run split (color-coded), Avg Yards. Each with stagger animation + hover shadow.
+- **AI Tag form (left rail)**: title input + description textarea + opponent selector. Submit calls `/api/film-tag`. Loading state shows spinner. Error state shows destructive border + AlertCircle. Success shows toast with tagged concept+coverage.
+- **Filter bar**: All / Explosive / Turnovers / Pass / Run Tabs + search input (by title, description, concept, coverage) + filtered count badge + Clear all button.
+- **Clip grid**: 2-column responsive grid of clip cards. Each card has:
+  - Helmet-gradient Film icon + title + EXP/TO badges.
+  - Description (line-clamped to 2 lines).
+  - Tag grid (8 fields: personnel, formation, motion, concept, front, coverage, pressure, result, yards) — only renders non-null fields.
+  - Badges row: play type (color-coded: run=green, pass=gold, RPO=orange, PA/screen/boot=teal), result type (color-coded by outcome), situational tags.
+  - Coaching note callout: accent-orange left border with Sparkles icon + AI-generated coaching takeaway.
+  - Hover: shadow-md + delete button appears (Trash2 icon, hover-destructive).
+- **Persistence**: clips stored in `localStorage` keyed `gridironiq:film:clips` (up to 100 clips). Survives refresh.
+- **Animated transitions**: framer-motion AnimatePresence + layout animations on clip add/delete.
+- **Empty state**: friendly "No clips tagged yet" with icon + helper text.
+
+### RedZoneIQ™ (`src/components/gridiron/redzone-iq.tsx`, ~420 lines)
+- Red zone intelligence module. Shows efficiency heat map by field zone + top RZ concepts + situation-aware play selector.
+- **Hero header**: stadium-sweep, helmet-shine Flame icon, live RZ stats summary (RZ snaps, success rate, TD rate, yds/play, turnovers).
+- **KPI strip (5 tiles)**: RZ Snaps, Success Rate, TD Rate, Explosives, Turnovers. Each with stagger + hover shadow.
+- **Coaching Insight callout**: dynamic advice based on RZ success rate — green Lightbulb "Continue prioritizing high-percentage concepts" when ≥50% SR, orange AlertTriangle "Consider installing more compact formations" when <50%.
+- **Red Zone Efficiency Heat Map**: 10-zone grid (50-yard line → goal line) showing snap count + success rate per zone. Color gradient intensifies from green (midfield) → gold → orange → red (goal line). Opacity scaled by sample size relative to max. Hover tooltip with full stats. Zone breakdown table below shows snaps/SR%/avg yds/explosive/turnover per zone.
+- **Top Red-Zone Concepts**: ranked list of top 8 concepts used in RZ with success-rate visual bar (green ≥60%, gold 45-59%, red <45%). Trophy icon on #1.
+- **Red-Zone Play Selector**: Tabs for High Red (25-15) / Low Red (15-5) / Goal Line (5-in). Filtered list of plays tagged with the corresponding field zone. Each play card shows play name, playId, concept, personnel, coverage targets as chips. Click → opens the play in PlaybookIQ (uses Zustand `setSelectedPlayId` + `setActiveModule('playbook')`).
+
+## Wiring & Integration
+
+- `lib/store.ts`: Added `film` and `redzone` to ModuleId union type. Total modules: 16.
+- `app/page.tsx`:
+  - Added 2 new lazy-loaded dynamic imports (FilmIQ, RedZoneIQ).
+  - Added 2 nav items in the PLANNING group: RedZoneIQ (Flame icon), FilmIQ (Clapperboard icon), both with `badge: 'NEW'`.
+  - Added 2 router cases.
+  - Added `Clapperboard` + `Flame` icon imports.
+  - Updated footer stat from "14 modules" → "16 modules".
+- `components/gridiron/dashboard.tsx`:
+  - Added `Clapperboard` + `Flame` icon imports.
+  - Added 2 new cards to MODULE_CARDS launchpad: RedZoneIQ (Flame, accent), FilmIQ (Clapperboard, primary).
+
+## Verification
+
+- `bun run lint`: ✅ clean (0 errors, 0 warnings).
+- Agent Browser smoke test across all 16 modules: ✅ all render, console 100% clean (no warnings, no errors).
+- **FilmIQ AI tagging verified end-to-end**:
+  - Submitted description: "Gun Trips right, Z in jet motion across, QB hands inside zone, RB cuts back for 12 yards. Defense was in 4-2-5 Cover 3. Explosive run, 1st down."
+  - LLM returned structured tags: Formation=Gun Trips, Concept=inside zone, Coverage=cover 3 match, Yards=12, Explosive=true.
+  - LLM-generated coaching note: "RB cutback against Cover 3 defense resulted in explosive gain."
+  - Stats strip updated: "1 clips · 1 explosive · 0 turnovers · avg 12 yds".
+  - Clip persisted to localStorage — verified survives page reload.
+- **RedZoneIQ verified**: renders with 1 RZ snap (from seed data), heat map showing the 1 snap at the appropriate yard-line zone, 100% success rate, coaching insight "Red zone efficiency is strong at 100%... Continue prioritizing high-percentage concepts."
+- Mobile responsive verified at 390×844: both new modules render with stacked layout.
+- Screenshots captured: `/tmp/qa-film-desktop.png`, `/tmp/qa-redzone-desktop.png`, `/tmp/qa-film-mobile.png`, `/tmp/qa-redzone-mobile.png`.
+
+## Stage Summary
+
+### Current project status
+- **16 modules** fully wired (was 14, added 2 new): Command Center, PlaybookIQ, Formation Lab, ScoutIQ, Coach AI, GamePlanIQ, CallSheetIQ, WristbandIQ, PracticeIQ, AnalyticsIQ, **RedZoneIQ (NEW)**, **FilmIQ (NEW)**, InstallIQ, PersonnelIQ, PlayerQuiz, TwoMinuteIQ.
+- All modules render and function end-to-end.
+- Lint: clean. Console: clean. No runtime errors.
+- Total module source files: 34 (was 32).
+- New API route added: `/api/film-tag` (LLM-powered film tagging).
+
+### Completed modifications
+- 2 new modules built (~930 lines of new component code).
+- 1 new API route built (~135 lines).
+- FilmIQ: full AI-powered film tagging workflow with localStorage persistence.
+- RedZoneIQ: 10-zone heat map + top concepts + situation-aware play selector with cross-module navigation to PlaybookIQ.
+- Sidebar nav + dashboard launchpad + footer updated to reflect 16 modules.
+
+### Unresolved issues / risks
+- None blocking. All bugs fixed, all features work, lint+console clean.
+
+### Priority recommendations for next round
+1. **SituationalIQ drill-down** — combine ScoutIQ + AnalyticsIQ + RedZoneIQ into a unified situational deep-dive (e.g., "Show me everything about 3rd & medium vs Trips formations").
+2. **Real film upload** — accept video file uploads (currently text descriptions only). Use VLM skill to analyze video frames and auto-tag.
+3. **Post play persistence via POST API** — let coaches save edited Formation Lab diagrams, PersonnelIQ availability, and FilmIQ clips back to the DB.
+4. **Real auth + multi-tenant isolation** — NextAuth.js v4 is installed; add coach/analyst/player roles per the original product vision.
+5. **Export CallSheet/Wristband/FilmIQ to PDF** — add a server-side PDF generation route using the pdf skill.
+6. **Drag-and-drop player repositioning in Formation Lab** — restore the original drag-and-drop intent (currently click-to-select only).
+7. **AI-powered opponent scout summary** — use LLM to generate a natural-language scouting report from the deterministic tendency data.
+8. **TwoMinuteIQ opponent mode** — let coach simulate defending a 2-minute drive.
+9. **Quiz mode in FilmIQ** — show a film clip, quiz player on the concept/coverage/result.
