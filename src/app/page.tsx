@@ -10,6 +10,7 @@ import {
   Clapperboard,
   Clock,
   Crosshair,
+  FlaskConical,
   Flame,
   GraduationCap,
   LayoutDashboard,
@@ -53,6 +54,8 @@ const PersonnelIQ = dynamic(() => import('@/components/gridiron/personnel-iq'))
 const TwoMinuteIQ = dynamic(() => import('@/components/gridiron/two-minute-iq'))
 const FilmIQ = dynamic(() => import('@/components/gridiron/film-iq'))
 const RedZoneIQ = dynamic(() => import('@/components/gridiron/redzone-iq'))
+const SituationalIQ = dynamic(() => import('@/components/gridiron/situational-iq'))
+const TendencyLab = dynamic(() => import('@/components/gridiron/tendency-lab'))
 
 interface NavItem {
   id: ModuleId
@@ -69,6 +72,8 @@ const NAV: NavItem[] = [
   { id: 'designer', label: 'Formation Lab', short: 'Designer', icon: <Crosshair className="size-4" />, group: 'intelligence' },
   { id: 'scout', label: 'ScoutIQ', short: 'Scout', icon: <Shield className="size-4" />, group: 'intelligence' },
   { id: 'coach-ai', label: 'Coach AI', short: 'Coach', icon: <Brain className="size-4" />, group: 'intelligence' },
+  { id: 'tendencylab', label: 'TendencyLab', short: 'Tendency Lab', icon: <FlaskConical className="size-4" />, group: 'intelligence', badge: 'NEW' },
+  { id: 'situational', label: 'SituationalIQ', short: 'Situational', icon: <Crosshair className="size-4" />, group: 'intelligence', badge: 'NEW' },
   { id: 'gameplan', label: 'GamePlanIQ', short: 'Game Plan', icon: <Target className="size-4" />, group: 'planning' },
   { id: 'callsheet', label: 'CallSheetIQ', short: 'Call Sheet', icon: <ListChecks className="size-4" />, group: 'planning' },
   { id: 'wristband', label: 'WristbandIQ', short: 'Wristband', icon: <Watch className="size-4" />, group: 'planning', badge: 'NEW' },
@@ -226,6 +231,10 @@ function ModuleRouter() {
       return <FilmIQ />
     case 'redzone':
       return <RedZoneIQ />
+    case 'situational':
+      return <SituationalIQ />
+    case 'tendencylab':
+      return <TendencyLab />
     default:
       return <Dashboard />
   }
@@ -343,7 +352,7 @@ export default function Home() {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
                 <Zap className="size-3 text-accent" />
-                <span className="text-accent">16 modules</span>
+                <span className="text-accent">18 modules</span>
                 <span className="opacity-30">·</span>
                 <span className="text-primary">LLM-powered</span>
               </div>

@@ -12,6 +12,7 @@ import {
   Clock,
   Crosshair,
   Dumbbell,
+  FlaskConical,
   Flame,
   GraduationCap,
   ListChecks,
@@ -160,6 +161,20 @@ const MODULE_CARDS: Array<{
     description: 'Coordinator-level AI assistant',
     icon: <Brain className="size-5" />,
     accent: 'text-accent',
+  },
+  {
+    id: 'tendencylab',
+    label: 'TendencyLab',
+    description: 'Interactive tendency explorer with charts',
+    icon: <FlaskConical className="size-5" />,
+    accent: 'text-chart-5',
+  },
+  {
+    id: 'situational',
+    label: 'SituationalIQ',
+    description: 'Down/distance × hash × zone deep-dive',
+    icon: <Crosshair className="size-5" />,
+    accent: 'text-chart-3',
   },
   {
     id: 'install',

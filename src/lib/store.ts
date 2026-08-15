@@ -23,6 +23,8 @@ export type ModuleId =
   | 'twominute'
   | 'film'
   | 'redzone'
+  | 'situational'
+  | 'tendencylab'
 
 export interface UINotice {
   id: string
