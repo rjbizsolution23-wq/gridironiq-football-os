@@ -20,6 +20,7 @@ export type ModuleId =
   | 'quiz'
   | 'wristband'
   | 'practice'
+  | 'twominute'
 
 export interface UINotice {
   id: string

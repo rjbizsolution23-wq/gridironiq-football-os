@@ -8,6 +8,7 @@ import {
   Brain,
   CalendarClock,
   ClipboardList,
+  Clock,
   Crosshair,
   Dumbbell,
   GraduationCap,
@@ -152,11 +153,25 @@ const MODULE_CARDS: Array<{
     accent: 'text-primary',
   },
   {
+    id: 'personnel',
+    label: 'PersonnelIQ',
+    description: 'Depth chart & availability matrix',
+    icon: <Users className="size-5" />,
+    accent: 'text-chart-5',
+  },
+  {
     id: 'quiz',
     label: 'PlayerQuiz',
     description: 'Interactive playbook recall quizzes',
     icon: <Sparkles className="size-5" />,
     accent: 'text-accent',
+  },
+  {
+    id: 'twominute',
+    label: 'TwoMinuteIQ',
+    description: 'End-of-half drill simulator',
+    icon: <Clock className="size-5" />,
+    accent: 'text-destructive',
   },
 ]
 
