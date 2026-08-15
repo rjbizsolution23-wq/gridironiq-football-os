@@ -21,6 +21,7 @@ import {
   ListChecks,
   Menu,
   PlayCircle,
+  Settings,
   Shield,
   Sparkles,
   Target,
@@ -64,6 +65,8 @@ const MatchupIQ = dynamic(() => import('@/components/gridiron/matchup-iq'))
 const DrillBuilder = dynamic(() => import('@/components/gridiron/drill-builder'))
 const DepthChartIQ = dynamic(() => import('@/components/gridiron/depthchart-iq'))
 const SelfScoutIQ = dynamic(() => import('@/components/gridiron/selfscout-iq'))
+const WeekPlanIQ = dynamic(() => import('@/components/gridiron/weekplan-iq'))
+const SettingsIQ = dynamic(() => import('@/components/gridiron/settings-iq'))
 
 interface NavItem {
   id: ModuleId
@@ -92,11 +95,13 @@ const NAV: NavItem[] = [
   { id: 'redzone', label: 'RedZoneIQ', short: 'Red Zone', icon: <Flame className="size-4" />, group: 'planning', badge: 'NEW' },
   { id: 'film', label: 'FilmIQ', short: 'Film', icon: <Clapperboard className="size-4" />, group: 'planning', badge: 'NEW' },
   { id: 'matchup', label: 'MatchupIQ', short: 'Matchup', icon: <Gamepad2 className="size-4" />, group: 'planning', badge: 'NEW' },
+  { id: 'weekplan', label: 'WeekPlanIQ', short: 'Week Plan', icon: <CalendarClock className="size-4" />, group: 'planning', badge: 'NEW' },
   { id: 'install', label: 'InstallIQ', short: 'Install', icon: <GraduationCap className="size-4" />, group: 'operation' },
   { id: 'personnel', label: 'PersonnelIQ', short: 'Personnel', icon: <Users className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'quiz', label: 'PlayerQuiz', short: 'Quiz', icon: <Sparkles className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'twominute', label: 'TwoMinuteIQ', short: '2-Min Drill', icon: <Clock className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'drills', label: 'DrillBuilder', short: 'Drills', icon: <Dumbbell className="size-4" />, group: 'operation', badge: 'NEW' },
+  { id: 'settings', label: 'SettingsIQ', short: 'Settings', icon: <Settings className="size-4" />, group: 'operation' },
 ]
 
 const GROUP_LABELS: Record<NavItem['group'], string> = {
@@ -255,6 +260,10 @@ function ModuleRouter() {
       return <DepthChartIQ />
     case 'selfscout':
       return <SelfScoutIQ />
+    case 'weekplan':
+      return <WeekPlanIQ />
+    case 'settings':
+      return <SettingsIQ />
     default:
       return <Dashboard />
   }
@@ -372,7 +381,7 @@ export default function Home() {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
                 <Zap className="size-3 text-accent" />
-                <span className="text-accent">22 modules</span>
+                <span className="text-accent">24 modules</span>
                 <span className="opacity-30">·</span>
                 <span className="text-primary">LLM-powered</span>
               </div>

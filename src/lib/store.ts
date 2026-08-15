@@ -29,6 +29,8 @@ export type ModuleId =
   | 'drills'
   | 'depthchart'
   | 'selfscout'
+  | 'weekplan'
+  | 'settings'
 
 export interface UINotice {
   id: string

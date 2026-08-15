@@ -166,6 +166,13 @@ const MODULE_CARDS: Array<{
     accent: 'text-accent',
   },
   {
+    id: 'weekplan',
+    label: 'WeekPlanIQ',
+    description: 'Weekly game-prep dashboard',
+    icon: <CalendarClock className="size-5" />,
+    accent: 'text-primary',
+  },
+  {
     id: 'coach-ai',
     label: 'Coach AI',
     description: 'Coordinator-level AI assistant',
