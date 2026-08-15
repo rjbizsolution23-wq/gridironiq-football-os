@@ -1308,3 +1308,109 @@ Work Log:
 12. **WeekPlanIQ task editing** — let coaches add/edit/customize weekly tasks (currently read-only seed list).
 13. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
 14. **Global search** — add a command-palette style search across all modules (Cmd+K).
+
+---
+Task ID: 13-cron-round-9
+Agent: main (Z.ai Code, cron-triggered webDevReview)
+Task: Ninth 15-min review round — add Global Command Palette (Cmd+K) for fast module navigation + actions
+
+Work Log:
+
+## Project Status Assessment (start of round)
+
+- Dev server healthy on port 3000 (PID 18641). All 24 v1.8 modules render via Agent Browser smoke test.
+- Lint clean (0 errors, 0 warnings).
+- Console clean (no warnings, no errors).
+- Worklog had 14 prior task entries covering v1 + v1.1 + v1.2 + v1.3 + v1.4 + v1.5 + v1.6 + v1.7 + v1.8.
+- 24 modules wired across 3 nav groups: Intelligence (9), Planning (9), Operation (6).
+
+## New Feature Built
+
+### Global Command Palette (Cmd+K) (`src/components/gridiron/command-palette.tsx`, ~320 lines)
+- Power-user feature for fast navigation across all 24 modules + 6 quick actions, triggered by Cmd+K (macOS) / Ctrl+K (Windows/Linux).
+- **Palette structure**:
+  - **Backdrop**: semi-transparent black overlay with backdrop-blur, click-outside to close.
+  - **Modal**: max-w-2xl popover with `glow-primary-soft` shadow, framer-motion entrance (opacity + scale + y animation, 180ms).
+  - **Search input**: autofocus on open, placeholder "Search modules, actions, or type a command…", ESC kbd badge on the right.
+  - **Results list** (max-h-50vh, scrollable with scrollbar-thin): grouped into Navigate (24 items) + Actions (6 items).
+  - **Footer**: keyboard hints (↑↓ navigate, ↵ select, esc close) + GridironIQ™ branding.
+
+- **30 palette items**:
+  - **Navigate (24)**: all 24 modules with icon, label, description, and keywords for fuzzy search. Each navigates via `setActiveModule()`.
+  - **Actions (6)**: Ask Coach AI (A), Build Game Plan (G), Predict Matchup (P), Tag Film Clip (F), Start Quiz (Q), 2-Minute Drill (2). Each has a shortcut letter badge.
+
+- **Fuzzy search**: filters by label, description, or keywords (case-insensitive). Example: typing "matchup" returns MatchupIQ module + Predict Matchup action.
+
+- **Keyboard navigation**:
+  - ↑/↓ arrows to move selection (with scrollIntoView for off-screen items).
+  - Enter to select + execute action + close palette.
+  - Escape to close.
+  - Mouse hover also updates selection.
+  - Selection resets to 0 when query changes.
+
+- **Visual design**:
+  - Selected Navigate item: `bg-primary text-primary-foreground` with `↵` badge.
+  - Selected Action item: `bg-accent text-accent-foreground` with shortcut letter badge.
+  - Icons in rounded-md containers (muted bg when unselected, primary-foreground/15 when selected).
+  - Group headers: uppercase tracking-widest font-mono text-[10px] text-muted-foreground/70 with count.
+
+- **`useCommandPaletteShortcut` hook**: attaches a global keydown listener for Cmd+K / Ctrl+K, prevents default browser behavior, toggles palette open state.
+
+### Wiring into app shell (`src/app/page.tsx`)
+- Added `CommandPalette` + `useCommandPaletteShortcut` imports.
+- Added `Search` icon import.
+- `Home` component: added `paletteOpen` state + `useCommandPaletteShortcut(() => setPaletteOpen((o) => !o))` hook.
+- `TopBar`: now accepts `onOpenPalette` prop. Added a "Search… ⌘K" button in the topbar (hidden on mobile, visible md+) with Search icon + kbd badge.
+- Footer: added a "Search ⌘K" button next to the tagline (hidden on mobile).
+- `<CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />` rendered at the end of Home.
+
+## Verification
+
+- `bun run lint`: ✅ clean (0 errors, 0 warnings).
+- Agent Browser smoke test across all 24 modules: ✅ all render, console 100% clean (no warnings, no errors).
+- **Command palette verified end-to-end**:
+  - **Topbar button**: clicked "Search… ⌘K" → palette opened with "Search modules, actions, or type a command…" input + "NAVIGATE (24)" + "ACTIONS (6)" sections.
+  - **Search filter**: typed "matchup" → filtered to 1 Navigate result (MatchupIQ) + 1 Action (Predict Matchup). Both rendered with correct icons + descriptions.
+  - **Enter to select**: pressed Enter on the highlighted MatchupIQ item → palette closed + navigated to MatchupIQ module (verified "MATCHUPIQ™ · AI GAME PREDICTION ENGINE" rendered).
+  - **Cmd+K shortcut**: pressed Cmd+K → palette opened (verified "Search modules" input + "NAVIGATE (24)" appeared).
+  - **Arrow navigation**: pressed ArrowDown 3 times → selection moved to "ScoutIQ" (4th item, verified by the `↵` badge appearing next to it).
+  - **Escape to close**: pressed Escape → palette closed.
+  - **Footer button**: clicked footer "Search ⌘K" button → palette opened.
+- Screenshots captured: `/tmp/qa-command-palette.png`.
+
+## Stage Summary
+
+### Current project status
+- **24 modules** fully wired + **1 global command palette** overlay (no new module — app-shell feature).
+- All modules render and function end-to-end.
+- Lint: clean. Console: clean. No runtime errors.
+- Total module source files: 43 (was 42 — added command-palette.tsx).
+
+### Completed modifications
+- 1 new feature built: Global Command Palette (~320 lines).
+- 30 palette items (24 module navigations + 6 quick actions).
+- Cmd+K / Ctrl+K global keyboard shortcut.
+- Fuzzy search across label + description + keywords.
+- Full keyboard navigation (↑↓ arrows, Enter, Escape).
+- Topbar + footer Search buttons with ⌘K kbd badges.
+- framer-motion entrance animation + backdrop blur + glow shadow.
+
+### Unresolved issues / risks
+- None blocking. All bugs fixed, all features work, lint+console clean.
+
+### Priority recommendations for next round
+1. **Recent searches in palette** — show last 5 navigated items at the top of the palette when query is empty.
+2. **Real film upload** — accept video file uploads (currently FilmIQ uses text descriptions only). Use VLM skill to analyze video frames and auto-tag.
+3. **POST persistence API** — let coaches save edited Formation Lab diagrams, PersonnelIQ availability, FilmIQ clips, DrillBuilder custom drills, CallSheet edits, and WeekPlanIQ tasks back to the DB.
+4. **Real auth + multi-tenant isolation** — NextAuth.js v4 is installed; add coach/analyst/player roles per the original product vision.
+5. **PDF export** — server-side PDF generation for CallSheet, Wristband, FilmIQ clip reports, DrillBuilder practice plans, and WeekPlanIQ weekly schedules using the pdf skill.
+6. **Drag-and-drop player repositioning in Formation Lab** — restore the original drag-and-drop intent (currently click-to-select only).
+7. **TwoMinuteIQ opponent mode** — let coach simulate defending a 2-minute drive.
+8. **Quiz mode in FilmIQ** — show a film clip, quiz player on the concept/coverage/result.
+9. **Shareable deep links** — encode filter state in URL for SituationalIQ + TendencyLab + SelfScoutIQ so coaches can share specific views.
+10. **MatchupIQ historical accuracy tracking** — log predicted vs actual scores over time to calibrate the model.
+11. **DrillBuilder → PracticeIQ drag-and-drop** — let coaches drag drills from Quick Drills panel directly into practice periods.
+12. **Cross-module intelligence sharing** — SelfScoutIQ warnings could feed into MatchupIQ predictions as additional context.
+13. **WeekPlanIQ task editing** — let coaches add/edit/customize weekly tasks (currently read-only seed list).
+14. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
+15. **Command palette data search** — extend palette to search plays, opponents, players, drills (not just module navigation).

@@ -21,6 +21,7 @@ import {
   ListChecks,
   Menu,
   PlayCircle,
+  Search,
   Settings,
   Shield,
   Sparkles,
@@ -40,6 +41,10 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { useAppStore, type ModuleId } from '@/lib/store'
 import { Toaster as SonnerToaster } from '@/components/ui/sonner'
+import {
+  CommandPalette,
+  useCommandPaletteShortcut,
+} from '@/components/gridiron/command-palette'
 
 // Lazy-load modules so each module's React Query provider doesn't initialize
 // until the user opens it. Keeps initial bundle smaller + avoids hydration mismatches.
@@ -286,7 +291,7 @@ function AnimatedModuleRouter() {
   )
 }
 
-function TopBar() {
+function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
   const activeModule = useAppStore((s) => s.activeModule)
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
   const setSidebarOpen = useAppStore((s) => s.setSidebarOpen)
@@ -325,6 +330,16 @@ function TopBar() {
 
         {/* Right side */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Command palette trigger */}
+          <button
+            onClick={onOpenPalette}
+            className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-border bg-muted/30 hover:bg-muted hover:border-primary/40 transition-colors text-xs text-muted-foreground"
+            title="Open command palette (⌘K)"
+          >
+            <Search className="size-3.5" />
+            <span className="hidden lg:inline">Search…</span>
+            <kbd className="px-1 py-0.5 rounded border border-border bg-background text-[9px] font-mono">⌘K</kbd>
+          </button>
           <Badge
             variant="outline"
             className="hidden md:inline-flex text-[10px] font-mono bg-primary/10 text-primary border-primary/30"
@@ -349,6 +364,9 @@ function TopBar() {
 }
 
 export default function Home() {
+  const [paletteOpen, setPaletteOpen] = React.useState(false)
+  useCommandPaletteShortcut(() => setPaletteOpen((o) => !o))
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Desktop sidebar (sticky) */}
@@ -358,7 +376,7 @@ export default function Home() {
 
       {/* Main column */}
       <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
-        <TopBar />
+        <TopBar onOpenPalette={() => setPaletteOpen(true)} />
         <main className="flex-1 px-3 md:px-6 py-4 md:py-6">
           <AnimatedModuleRouter />
         </main>
@@ -387,6 +405,15 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono">
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                title="Open command palette (Cmd+K)"
+              >
+                <Search className="size-3" />
+                <span>Search</span>
+                <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[9px]">⌘K</kbd>
+              </button>
               <span className="hidden sm:inline tracking-widest uppercase">PLAYBOOK · SCOUT · GAMEPLAN · DEVELOP</span>
               <span className="opacity-50 hidden sm:inline">·</span>
               <span className="text-primary tracking-widest uppercase">Build · Teach · Attack</span>
@@ -395,6 +422,7 @@ export default function Home() {
         </footer>
       </div>
 
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       <SonnerToaster richColors position="top-right" />
     </div>
   )
