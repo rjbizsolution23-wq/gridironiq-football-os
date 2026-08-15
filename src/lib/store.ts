@@ -27,6 +27,8 @@ export type ModuleId =
   | 'tendencylab'
   | 'matchup'
   | 'drills'
+  | 'depthchart'
+  | 'selfscout'
 
 export interface UINotice {
   id: string

@@ -11,10 +11,12 @@ import {
   Clock,
   Crosshair,
   Dumbbell,
+  Eye,
   FlaskConical,
   Flame,
   Gamepad2,
   GraduationCap,
+  Layers,
   LayoutDashboard,
   ListChecks,
   Menu,
@@ -60,6 +62,8 @@ const SituationalIQ = dynamic(() => import('@/components/gridiron/situational-iq
 const TendencyLab = dynamic(() => import('@/components/gridiron/tendency-lab'))
 const MatchupIQ = dynamic(() => import('@/components/gridiron/matchup-iq'))
 const DrillBuilder = dynamic(() => import('@/components/gridiron/drill-builder'))
+const DepthChartIQ = dynamic(() => import('@/components/gridiron/depthchart-iq'))
+const SelfScoutIQ = dynamic(() => import('@/components/gridiron/selfscout-iq'))
 
 interface NavItem {
   id: ModuleId
@@ -78,6 +82,8 @@ const NAV: NavItem[] = [
   { id: 'coach-ai', label: 'Coach AI', short: 'Coach', icon: <Brain className="size-4" />, group: 'intelligence' },
   { id: 'tendencylab', label: 'TendencyLab', short: 'Tendency Lab', icon: <FlaskConical className="size-4" />, group: 'intelligence', badge: 'NEW' },
   { id: 'situational', label: 'SituationalIQ', short: 'Situational', icon: <Crosshair className="size-4" />, group: 'intelligence', badge: 'NEW' },
+  { id: 'selfscout', label: 'SelfScoutIQ', short: 'Self-Scout', icon: <Eye className="size-4" />, group: 'intelligence', badge: 'NEW' },
+  { id: 'depthchart', label: 'DepthChartIQ', short: 'Depth Chart', icon: <Layers className="size-4" />, group: 'intelligence', badge: 'NEW' },
   { id: 'gameplan', label: 'GamePlanIQ', short: 'Game Plan', icon: <Target className="size-4" />, group: 'planning' },
   { id: 'callsheet', label: 'CallSheetIQ', short: 'Call Sheet', icon: <ListChecks className="size-4" />, group: 'planning' },
   { id: 'wristband', label: 'WristbandIQ', short: 'Wristband', icon: <Watch className="size-4" />, group: 'planning', badge: 'NEW' },
@@ -245,6 +251,10 @@ function ModuleRouter() {
       return <MatchupIQ />
     case 'drills':
       return <DrillBuilder />
+    case 'depthchart':
+      return <DepthChartIQ />
+    case 'selfscout':
+      return <SelfScoutIQ />
     default:
       return <Dashboard />
   }
@@ -362,7 +372,7 @@ export default function Home() {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
                 <Zap className="size-3 text-accent" />
-                <span className="text-accent">20 modules</span>
+                <span className="text-accent">22 modules</span>
                 <span className="opacity-30">·</span>
                 <span className="text-primary">LLM-powered</span>
               </div>
