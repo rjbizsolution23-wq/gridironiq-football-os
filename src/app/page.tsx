@@ -419,6 +419,29 @@ export default function Home() {
               <span className="text-primary tracking-widest uppercase">Build · Teach · Attack</span>
             </div>
           </div>
+          {/* Made by RJ Business Solutions branding */}
+          <div className="px-3 md:px-6 pb-3 flex items-center justify-center gap-2 text-[11px] border-t border-border/50 pt-2.5">
+            <span className="text-muted-foreground">Made by</span>
+            <a
+              href="https://rjbusinesssolutions.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary hover:text-accent transition-colors inline-flex items-center gap-1.5"
+            >
+              RJ Business Solutions
+              <span className="text-muted-foreground font-normal">&</span>
+              Rick Jefferson
+            </a>
+            <span className="text-muted-foreground/50">·</span>
+            <a
+              href="https://rjbusinesssolutions.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors underline-offset-2 hover:underline"
+            >
+              rjbusinesssolutions.org
+            </a>
+          </div>
         </footer>
       </div>
 

@@ -499,6 +499,29 @@ function SettingsMain() {
                 <div className="text-base font-bold font-mono">LIVE</div>
               </div>
             </div>
+            {/* Made by RJ Business Solutions */}
+            <div className="mt-4 pt-3 border-t border-border flex items-center justify-center gap-2 text-[11px]">
+              <span className="text-muted-foreground">Made by</span>
+              <a
+                href="https://rjbusinesssolutions.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:text-accent transition-colors"
+              >
+                RJ Business Solutions
+              </a>
+              <span className="text-muted-foreground/50">&</span>
+              <span className="font-semibold text-foreground">Rick Jefferson</span>
+              <span className="text-muted-foreground/50">·</span>
+              <a
+                href="https://rjbusinesssolutions.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors underline-offset-2 hover:underline"
+              >
+                rjbusinesssolutions.org
+              </a>
+            </div>
           </div>
         </div>
       </Card>
