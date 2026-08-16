@@ -42,6 +42,8 @@ const STORAGE_KEYS = [
   { key: 'gridironiq:personnel:availability', label: 'PersonnelIQ availability state', icon: Users, color: 'text-chart-5' },
   { key: 'gridironiq:drillbuilder:custom', label: 'DrillBuilder custom drills', icon: HardDrive, color: 'text-chart-3' },
   { key: 'gridironiq:weekplan:tasks', label: 'WeekPlanIQ task completion', icon: HardDrive, color: 'text-primary' },
+  { key: 'gridironiq:weekplan:custom-tasks', label: 'WeekPlanIQ custom tasks', icon: HardDrive, color: 'text-primary' },
+  { key: 'gridironiq:palette:recent', label: 'Command palette recent searches', icon: Settings, color: 'text-chart-3' },
   { key: 'gridironiq:settings', label: 'SettingsIQ preferences', icon: Settings, color: 'text-chart-5' },
 ]
 

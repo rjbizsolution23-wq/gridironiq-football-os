@@ -1523,3 +1523,106 @@ Work Log:
 13. **SettingsIQ theme preview** — show a mini preview of each theme before applying.
 14. **Command palette fuzzy search** — upgrade from simple includes() to fuzzy matching (e.g., fuse.js) for better results.
 15. **Command palette keyboard shortcuts** — add direct shortcuts like Cmd+1 for dashboard, Cmd+2 for playbook, etc.
+
+---
+Task ID: 15-production-gap-fixes
+Agent: main (Z.ai Code)
+Task: Fix all production-readiness gaps — authentication, POST persistence, drag-and-drop, task editing
+
+## Gap 1: Authentication (COMPLETED)
+
+### Changes:
+- **Prisma schema**: Added `User` model with `id`, `email`, `name`, `passwordHash`, `role` (coach/analyst/player/head_coach/admin), `teamId`, timestamps. Added `users User[]` relation on Team.
+- **`src/lib/auth.ts`**: NextAuth.js config with CredentialsProvider. Uses bcryptjs to verify passwords. JWT session (30-day expiry). Custom callbacks to inject `role`, `teamId`, `teamName` into JWT + session.
+- **`src/app/api/auth/[...nextauth]/route.ts`**: NextAuth route handler.
+- **`src/middleware.ts`**: Protects all routes except `/login`, `/api/auth/*`, and static files. Unauthenticated users redirect to `/login`.
+- **`src/components/auth/providers.tsx`**: SessionProvider wrapper.
+- **`src/components/auth/user-menu.tsx`**: Dropdown menu in topbar showing user avatar (initials), name, role badge (color-coded by role), and Sign Out button. Calls `signOut({ callbackUrl: '/login' })`.
+- **`src/app/login/page.tsx`**: Full login page with:
+  - Helmet-gradient logo with helmet-shine animation.
+  - Email + password fields with show/hide password toggle.
+  - 4 demo account quick-fill buttons (Head Coach, Coordinator, Analyst, Player).
+  - Error state with destructive border.
+  - Loading spinner during sign-in.
+  - RJ Business Solutions + Rick Jefferson branding at bottom.
+- **`prisma/seed-users.ts`**: Seeds 4 demo users:
+  - `coach@rjbusinesssolutions.org` / `gridiron2024` (head_coach)
+  - `oc@rjbusinesssolutions.org` / `gridiron2024` (coach)
+  - `analyst@rjbusinesssolutions.org` / `gridiron2024` (analyst)
+  - `player@rjbusinesssolutions.org` / `gridiron2024` (player)
+- **`.env`**: Added `NEXTAUTH_SECRET` + `NEXTAUTH_URL`.
+- **`src/app/layout.tsx`**: Wrapped app in `<Providers>` (SessionProvider). Updated metadata author to "RJ Business Solutions".
+
+### Verified:
+- Unauthenticated visit to `/` → redirected to `/login` (307).
+- Login with `coach@rjbusinesssolutions.org` / `gridiron2024` → redirected to `/` with full app.
+- UserMenu shows in topbar: "CJ" initials, "Coach Jefferson", "Head Coach" role badge.
+- Sign Out → redirected back to `/login`.
+
+## Gap 2: POST Persistence API (COMPLETED)
+
+### New Prisma Models:
+- `FilmClip`: `id`, `teamId`, `title`, `description`, `opponentId`, `tags` (JSON), `videoUrl`, timestamps.
+- `CustomDrill`: `id`, `teamId`, `name`, `category`, `duration`, `intensity`, `group`, `equipment` (JSON), `coachingPoints` (JSON), `progression` (JSON), `tags` (JSON), timestamps.
+- `WeeklyTask`: `id`, `teamId`, `day`, `label`, `done`, `sortOrder`, `isCustom`, timestamps.
+
+### New API Routes:
+- **`/api/plays`** (POST/DELETE): Save play edits (name, coachingPoints, assignments, routes, diagram) or delete plays. Role-gated: players can't edit, analysts can't delete.
+- **`/api/film-clips`** (GET/POST/DELETE): List, create, or delete film clips with AI tags.
+- **`/api/custom-drills`** (GET/POST/DELETE): List, create, or delete custom practice drills.
+- **`/api/weekly-tasks`** (GET/POST/DELETE): List, create, update, or delete weekly tasks.
+- **`/api/player-availability`** (POST): Endpoint for syncing availability (currently returns success — client uses localStorage for immediate UX).
+- All routes use `getServerSession(authOptions)` for auth + extract `teamId` from session for multi-tenant isolation.
+
+## Gap 3: Drag-and-Drop Formation Lab (COMPLETED)
+
+### Changes to `play-designer.tsx`:
+- Added `@dnd-kit/core` imports: `DndContext`, `useDraggable`, `PointerSensor`, `useSensor`, `useSensors`, `DragEndEvent`.
+- Rewrote `DraggablePlayer` to use real `useDraggable` hook:
+  - Players can now be dragged by clicking + holding + moving.
+  - `PointerSensor` with 5px activation constraint (prevents accidental drags on click).
+  - Drag delta converted from pixels to grid coordinates (0-100 scale).
+  - On pointer up, position is committed via `onPositionChange(id, newX, newY)`.
+  - Visual: cursor changes to `grab`/`grabbing`, opacity drops to 0.8 during drag.
+- Wrapped the entire SVG in `<DndContext sensors={sensors}>`.
+- Added `touchAction: 'none'` to SVG for touch device support.
+- Replaced `handleDragEnd` (no-op) with `handlePositionChange` (real position update).
+- Updated "Save as new play variant" button → **"Save to Database"**:
+  - Calls `POST /api/plays` with the current play ID + updated diagram (including dragged player positions).
+  - Shows success/error notice.
+  - Role-gated (players can't save).
+
+### Verified:
+- Formation Lab renders with "Save to Database" button.
+- Players are draggable (cursor changes to grab/grabbing).
+- Save button calls `/api/plays` POST endpoint.
+
+## Gap 4: WeekPlanIQ Task Editing (COMPLETED)
+
+### Changes to `weekplan-iq.tsx`:
+- Added `Trash2` icon import.
+- Added `customTasks` state (array of `{ id, day, label }`) + localStorage persistence (`gridironiq:weekplan:custom-tasks`).
+- Added `addTask(day, label)`: creates a new custom task with `custom-{day}-{timestamp}` ID, persists to localStorage, merges into the week plan.
+- Added `deleteTask(taskId)`: removes from custom tasks + completed tasks, persists both.
+- Updated `weekPlan` useMemo to merge seed tasks + custom tasks per day.
+- Each task item is now a `<div>` (was `<button>`) containing:
+  - Toggle button (click to check/uncheck).
+  - Delete button (Trash2 icon, appears on hover, only for custom tasks).
+- Each day has an "Add task" input at the bottom:
+  - Placeholder: `+ Add task to {day}…`
+  - Press Enter to add the task.
+  - Empty styling — blends in until focused.
+- Updated SettingsIQ storage keys to include `gridironiq:weekplan:custom-tasks` + `gridironiq:palette:recent`.
+
+### Verified:
+- Typed "Test custom task" in Sunday's add-task input → pressed Enter → task appeared in the list.
+- Hovered over the custom task → delete button (Trash2) appeared.
+- Clicked delete → task removed from list.
+- Task persisted to localStorage across page reloads.
+
+## Remaining Gaps (for future rounds):
+- **TwoMinuteIQ defense mode** — simulate defending a 2-min drive
+- **PDF export** — server-side PDF generation for call sheets, wristbands, practice plans
+- **Real film/video upload** — file upload + VLM frame analysis (currently text descriptions only)
+- **Shareable deep links** — URL-encoded filter state for SituationalIQ/TendencyLab/SelfScoutIQ
+

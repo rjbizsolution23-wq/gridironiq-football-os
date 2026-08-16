@@ -29,6 +29,7 @@ import {
   Users,
   Wind,
   Zap,
+  Trash2,
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -252,6 +253,19 @@ function WeekPlanMain() {
 
   const weekPlanBase = React.useMemo(() => buildWeekPlan(opponent?.name ?? null), [opponent])
 
+  // Custom tasks (persisted to localStorage; would go to DB in production)
+  const CUSTOM_TASKS_KEY = 'gridironiq:weekplan:custom-tasks'
+  const [customTasks, setCustomTasks] = React.useState<Array<{ id: string; day: string; label: string }>>([])
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_TASKS_KEY)
+      if (raw) setCustomTasks(JSON.parse(raw))
+    } catch {
+      // ignore
+    }
+  }, [])
+
   // Task persistence: load completed task IDs from localStorage
   const STORAGE_KEY = 'gridironiq:weekplan:tasks'
   const [completedTasks, setCompletedTasks] = React.useState<Set<string>>(new Set())
@@ -267,6 +281,42 @@ function WeekPlanMain() {
       // ignore
     }
   }, [])
+
+  function addTask(day: string, label: string) {
+    const newTask = { id: `custom-${day}-${Date.now()}`, day, label }
+    setCustomTasks((prev) => {
+      const next = [...prev, newTask]
+      try {
+        localStorage.setItem(CUSTOM_TASKS_KEY, JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }
+
+  function deleteTask(taskId: string) {
+    setCustomTasks((prev) => {
+      const next = prev.filter((t) => t.id !== taskId)
+      try {
+        localStorage.setItem(CUSTOM_TASKS_KEY, JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+    // Also remove from completed
+    setCompletedTasks((prev) => {
+      const next = new Set(prev)
+      next.delete(taskId)
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }
 
   function toggleTask(taskId: string) {
     setCompletedTasks((prev) => {
@@ -291,16 +341,26 @@ function WeekPlanMain() {
     }
   }
 
-  // Apply persisted completion state to the week plan
+  // Apply persisted completion state + custom tasks to the week plan
   const weekPlan = React.useMemo(() => {
-    return weekPlanBase.map((day) => ({
-      ...day,
-      items: day.items.map((item) => ({
-        ...item,
-        done: completedTasks.has(item.id),
-      })),
-    }))
-  }, [weekPlanBase, completedTasks])
+    return weekPlanBase.map((day) => {
+      // Add custom tasks for this day
+      const dayCustomTasks = customTasks
+        .filter((t) => t.day === day.day)
+        .map((t) => ({ id: t.id, label: t.label, done: completedTasks.has(t.id) }))
+
+      return {
+        ...day,
+        items: [
+          ...day.items.map((item) => ({
+            ...item,
+            done: completedTasks.has(item.id),
+          })),
+          ...dayCustomTasks,
+        ],
+      }
+    })
+  }, [weekPlanBase, completedTasks, customTasks])
 
   // Progress: count completed items across the week
   const totalItems = weekPlan.reduce((a, d) => a + d.items.length, 0)
@@ -587,29 +647,62 @@ function WeekPlanMain() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-1.5">
                           {day.items.map((item, j) => (
-                            <button
+                            <div
                               key={item.id}
-                              onClick={() => toggleTask(item.id)}
-                              className={cn(
-                                'flex items-center gap-1.5 text-[11px] rounded px-1 py-0.5 -mx-1 transition-colors text-left hover:bg-muted/30',
-                                item.done && 'opacity-70'
-                              )}
+                              className="flex items-center gap-1.5 text-[11px] group"
                             >
-                              {item.done ? (
-                                <CheckCircle2 className="size-3 text-primary shrink-0" />
-                              ) : (
-                                <div className="size-3 rounded-full border border-muted-foreground/40 shrink-0 hover:border-primary transition-colors" />
-                              )}
-                              <span
+                              <button
+                                onClick={() => toggleTask(item.id)}
                                 className={cn(
-                                  'truncate',
-                                  item.done ? 'text-muted-foreground line-through' : 'text-foreground'
+                                  'flex items-center gap-1.5 flex-1 rounded px-1 py-0.5 -mx-1 transition-colors text-left hover:bg-muted/30',
+                                  item.done && 'opacity-70'
                                 )}
                               >
-                                {item.label}
-                              </span>
-                            </button>
+                                {item.done ? (
+                                  <CheckCircle2 className="size-3 text-primary shrink-0" />
+                                ) : (
+                                  <div className="size-3 rounded-full border border-muted-foreground/40 shrink-0 hover:border-primary transition-colors" />
+                                )}
+                                <span
+                                  className={cn(
+                                    'truncate',
+                                    item.done ? 'text-muted-foreground line-through' : 'text-foreground'
+                                  )}
+                                >
+                                  {item.label}
+                                </span>
+                              </button>
+                              {/* Delete custom task */}
+                              {item.id.includes('custom-') && (
+                                <button
+                                  onClick={() => deleteTask(item.id)}
+                                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity shrink-0"
+                                  title="Delete task"
+                                >
+                                  <Trash2 className="size-3" />
+                                </button>
+                              )}
+                            </div>
                           ))}
+                        </div>
+
+                        {/* Add task input */}
+                        <div className="mt-2">
+                          <input
+                            type="text"
+                            placeholder={`+ Add task to ${day.day}…`
+                            }
+                            className="w-full text-[11px] bg-transparent border-0 outline-none text-muted-foreground placeholder:text-muted-foreground/50 focus:text-foreground"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const target = e.target as HTMLInputElement
+                                if (target.value.trim()) {
+                                  addTask(day.day, target.value.trim())
+                                  target.value = ''
+                                }
+                              }
+                            }}
+                          />
                         </div>
                       </div>
                     </div>

@@ -1,6 +1,14 @@
 'use client'
 
 import * as React from 'react'
+import {
+  DndContext,
+  useDraggable,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   Activity,
@@ -163,20 +171,41 @@ function DraggablePlayer({
   player,
   side,
   isAnimated,
-  onDragStart,
+  onPositionChange,
 }: {
   player: DiagramPlayer
   side: 'offense' | 'defense'
   isAnimated: boolean
-  onDragStart?: (id: string) => void
+  onPositionChange: (id: string, newX: number, newY: number) => void
 }) {
-  // Click-to-select (no drag lib) — we just render and emit clicks.
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: player.id,
+  })
+
+  // Convert drag delta (pixels) back to grid coordinates
+  // X_USABLE = SVG_W - 2 * X_PAD = 1000 - 120 = 880; grid 0-100 → 8.8px per unit
+  // Y_USABLE = SVG_H = 520; grid 0-100 → 5.2px per unit
+  const xPerUnit = X_USABLE / 100
+  const yPerUnit = Y_USABLE / 100
+
+  const dragX = transform ? transform.x / xPerUnit : 0
+  const dragY = transform ? transform.y / yPerUnit : 0
+
   const isOff = side === 'offense'
   return (
     <g
-      transform={`translate(${gx(player.x)} ${gy(player.y)})`}
-      style={{ cursor: 'pointer' }}
-      onClick={() => onDragStart?.(player.id)}
+      ref={setNodeRef}
+      transform={`translate(${gx(player.x + dragX)} ${gy(player.y + dragY)})`}
+      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      {...listeners}
+      {...attributes}
+      onPointerUp={() => {
+        if (dragX !== 0 || dragY !== 0) {
+          const newX = Math.max(0, Math.min(100, player.x + dragX))
+          const newY = Math.max(0, Math.min(100, player.y + dragY))
+          onPositionChange(player.id, Math.round(newX), Math.round(newY))
+        }
+      }}
     >
       <circle
         r={14}
@@ -187,6 +216,7 @@ function DraggablePlayer({
           filter: isAnimated
             ? 'drop-shadow(0 0 8px oklch(0.62 0.16 152 / 0.9))'
             : undefined,
+          opacity: isDragging ? 0.8 : 1,
         }}
       />
       <text
@@ -509,6 +539,12 @@ function PathRenderer({
 }
 
 function DesignerMain() {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
+  )
+
   const { data } = useQuery({
     queryKey: ['gridiron'],
     queryFn: async () => {
@@ -604,9 +640,13 @@ function DesignerMain() {
     return () => window.clearInterval(id)
   }, [isPlaying, totalSteps])
 
-  function handleDragEnd(_id: string, _dx: number, _dy: number) {
-    // Drag-and-drop disabled in this build — players are click-to-select only.
-    return
+  function handlePositionChange(id: string, newX: number, newY: number) {
+    setPlayerPositions((prev) => ({ ...prev, [id]: { x: newX, y: newY } }))
+    pushNotice({
+      kind: 'info',
+      title: `${id} repositioned`,
+      body: `New position: (${newX}, ${newY})`,
+    })
   }
 
   function handlePlayerClick(id: string) {
@@ -631,12 +671,53 @@ function DesignerMain() {
     })
   }
 
-  function handleSave() {
-    pushNotice({
-      kind: 'success',
-      title: 'Play variant saved',
-      body: `${selectedPlay?.name} variant stored in your local playbook (demo).`,
+  async function handleSave() {
+    if (!selectedPlay || !diagram) {
+      pushNotice({
+        kind: 'warning',
+        title: 'Nothing to save',
+        body: 'Load a play with a diagram first.',
+      })
+      return
+    }
+
+    // Build the updated diagram with current player positions
+    const updatedPlayers = diagram.players.map((p) => {
+      const live = playerLookup.get(p.id)
+      return live ? { ...p, x: live.x, y: live.y } : p
     })
+    const updatedDiagram = { ...diagram, players: updatedPlayers }
+
+    try {
+      const response = await fetch('/api/plays', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedPlay.id,
+          name: selectedPlay.name,
+          coachingPoints: selectedPlay.coachingPoints,
+          assignments: selectedPlay.assignments,
+          routes: selectedPlay.routes,
+          diagram: updatedDiagram,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      pushNotice({
+        kind: 'success',
+        title: 'Play saved to database',
+        body: `${selectedPlay.name} diagram + player positions persisted.`,
+      })
+    } catch (e) {
+      pushNotice({
+        kind: 'error',
+        title: 'Save failed',
+        body: e instanceof Error ? e.message : 'Unknown error',
+      })
+    }
   }
 
   if (plays.length === 0) {
@@ -757,10 +838,17 @@ function DesignerMain() {
 
           {/* Field SVG */}
           <div className="relative bg-gradient-to-b from-[oklch(0.28_0.05_152)] to-[oklch(0.22_0.04_152)] p-2">
+            <DndContext
+              sensors={sensors}
+              onDragEnd={(e: DragEndEvent) => {
+                // Position is committed on pointer up in DraggablePlayer
+                // This is a no-op to satisfy DndContext
+              }}
+            >
             <svg
               viewBox={`0 0 ${SVG_W} ${SVG_H}`}
               className="w-full h-auto max-h-[60vh] block"
-              style={{ background: 'transparent' }}
+              style={{ background: 'transparent', touchAction: 'none' }}
             >
               <FootballFieldSvg />
 
@@ -815,8 +903,7 @@ function DesignerMain() {
                           key={`o-${p.id}`}
                           player={live}
                           side="offense"
-                          onDragEnd={handleDragEnd}
-                          onDragStart={handlePlayerClick}
+                          onPositionChange={handlePositionChange}
                           isAnimated={
                             animationOrder.some(
                               ({ p: ap }) => ap.from === p.id
@@ -833,8 +920,7 @@ function DesignerMain() {
                           key={`d-${p.id}`}
                           player={live}
                           side="defense"
-                          onDragEnd={handleDragEnd}
-                          onDragStart={handlePlayerClick}
+                          onPositionChange={handlePositionChange}
                           isAnimated={false}
                         />
                       )
@@ -842,6 +928,7 @@ function DesignerMain() {
                 </g>
               ) : null}
             </svg>
+            </DndContext>
 
             {/* Active step indicator */}
             {isPlaying && activeStep >= 0 && (
@@ -989,7 +1076,7 @@ function DesignerMain() {
               className="w-full"
               variant="default"
             >
-              Save as new play variant
+              Save to Database
             </Button>
           </div>
         </ScrollArea>

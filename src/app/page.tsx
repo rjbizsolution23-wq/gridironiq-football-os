@@ -45,6 +45,7 @@ import {
   CommandPalette,
   useCommandPaletteShortcut,
 } from '@/components/gridiron/command-palette'
+import { UserMenu } from '@/components/auth/user-menu'
 
 // Lazy-load modules so each module's React Query provider doesn't initialize
 // until the user opens it. Keeps initial bundle smaller + avoids hydration mismatches.
@@ -356,6 +357,7 @@ function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
             <Brain className="size-3.5 mr-1.5" />
             <span className="hidden sm:inline">Ask Coach AI</span>
           </Button>
+          <UserMenu />
         </div>
       </div>
       <Separator className="chalk-divider" />

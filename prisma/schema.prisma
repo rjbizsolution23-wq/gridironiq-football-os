@@ -12,6 +12,18 @@ datasource db {
 
 // ---------- Organizations & Team Memory ----------
 
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          String    @default("coach") // coach | analyst | player | head_coach | admin
+  teamId        String?
+  team          Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
 model Team {
   id          String   @id @default(cuid())
   name        String
@@ -26,6 +38,10 @@ model Team {
   games       Game[]
   callSheets  CallSheet[]
   installPlans InstallPlan[]
+  users       User[]
+  filmClips   FilmClip[]
+  customDrills CustomDrill[]
+  weeklyTasks WeeklyTask[]
 }
 
 model Player {
@@ -210,4 +226,49 @@ model InstallPlan {
   focus       String?
   sections    String   // JSON: [{period, items:[{type, name}]}]
   createdAt   DateTime @default(now())
+}
+
+// ---------- User-Generated Content (persisted) ----------
+
+model FilmClip {
+  id          String   @id @default(cuid())
+  teamId      String?
+  team        Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  opponentId  String?
+  tags        String   // JSON: {personnel, formation, concept, coverage, ...}
+  videoUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CustomDrill {
+  id          String   @id @default(cuid())
+  teamId      String?
+  team        Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  name        String
+  category    String   // passing, run_game, team, special_teams, defense, individual
+  duration    Int      // minutes
+  intensity   String   // low, medium, high
+  group       String   // team, offense, defense, special
+  equipment   String   // JSON array
+  coachingPoints String // JSON array
+  progression String   // JSON array
+  tags        String   // JSON array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WeeklyTask {
+  id          String   @id @default(cuid())
+  teamId      String?
+  team        Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  day         String   // Sunday, Monday, ...
+  label       String
+  done        Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  isCustom    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

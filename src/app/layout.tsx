@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Providers } from "@/components/auth/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     "Analytics",
     "AI",
   ],
-  authors: [{ name: "GridironIQ" }],
+  authors: [{ name: "RJ Business Solutions" }],
   icons: {
     icon: "/logo.svg",
   },
@@ -61,7 +62,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          {children}
+          <Providers>{children}</Providers>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
