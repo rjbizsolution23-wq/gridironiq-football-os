@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Clock,
   Dumbbell,
+  FileText,
   Flame,
   Plus,
   Search,
@@ -469,6 +470,15 @@ function PracticeMain() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 ml-2"
+            onClick={() => window.open('/api/export-pdf?type=practice', '_blank')}
+          >
+            <FileText className="size-3.5 mr-1.5" />
+            Export PDF
+          </Button>
         </div>
         {template && (
           <p className="mt-3 text-sm text-muted-foreground border-l-2 border-primary pl-3">

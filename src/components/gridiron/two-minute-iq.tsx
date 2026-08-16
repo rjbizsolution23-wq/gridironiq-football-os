@@ -12,6 +12,7 @@ import {
   Play,
   RotateCcw,
   Send,
+  Shield,
   Timer,
   TriangleAlert,
   Trophy,
@@ -451,6 +452,230 @@ function TwoMinuteMain() {
     })
   }
 
+  // DEFENSE MODE: simulate the opponent running a play against our defensive call
+  function callDefensivePlay(defensiveConcept: string) {
+    if (state.status === 'game-over') return
+
+    setState((prev) => {
+      if (prev.status === 'game-over' || prev.possession !== 'them') return prev
+
+      // Simulate opponent offensive play vs our defensive call
+      // Defensive concept effectiveness affects opponent outcome
+      const defBonus: Record<string, number> = {
+        'Cover 3 Match': 0.1,
+        'Quarters': 0.08,
+        'Cover 1 Robber': 0.12,
+        'Simulated Pressure': 0.15,
+        'Creeper': 0.1,
+        'Fire Zone': 0.18,
+        'Tampa 2': 0.05,
+        'Bracket': 0.12,
+      }
+      const bonus = defBonus[defensiveConcept] ?? 0.05
+
+      // Seeded random for opponent play
+      const seed = Date.now() % 1000 + prev.down * 11 + prev.yardLine * 7
+      const rand = (n: number) => {
+        const x = Math.sin(seed + n) * 10000
+        return x - Math.floor(x)
+      }
+
+      // Opponent play outcome with defensive bonus applied
+      const r = rand(1)
+      let yards = 0
+      let resultType: DrivePlay['resultType'] = 'run'
+      let clockDelta = 30
+      let turnover = false
+      let touchdown = false
+
+      // Turnover probability increases with good defensive call
+      const turnoverChance = 0.02 + bonus * 0.5
+      if (rand(2) < turnoverChance) {
+        return {
+          ...prev,
+          gameClockSeconds: Math.max(0, prev.gameClockSeconds - 20),
+          possession: 'us' as const,
+          driveHistory: [
+            ...prev.driveHistory,
+            {
+              down: prev.down,
+              distance: prev.distance,
+              yardLine: prev.yardLine,
+              playId: `DEF-${defensiveConcept}`,
+              playName: `Defensive: ${defensiveConcept}`,
+              concept: defensiveConcept.toLowerCase().replace(/\s/g, '_'),
+              yardsGained: 0,
+              resultType: 'turnover' as const,
+              clockDeltaSeconds: 20,
+              newDown: 1,
+              newDistance: 10,
+              newYardLine: 100 - prev.yardLine,
+              timestamp: Date.now(),
+            },
+          ],
+          down: 1,
+          distance: 10,
+          yardLine: 100 - prev.yardLine,
+        }
+      }
+
+      // Sack probability increases with pressure calls
+      const sackChance = defensiveConcept.includes('Pressure') || defensiveConcept.includes('Fire') || defensiveConcept.includes('Creeper') ? 0.15 : 0.06
+      if (r < sackChance) {
+        yards = -(4 + Math.floor(rand(3) * 4))
+        resultType = 'sack'
+        clockDelta = 33 + Math.floor(rand(4) * 5)
+      } else if (r < 0.4 + bonus) {
+        // Short gain — defense held
+        yards = Math.floor(rand(3) * 3)
+        resultType = 'run'
+        clockDelta = 30 + Math.floor(rand(4) * 5)
+      } else if (r < 0.7) {
+        // Medium completion
+        yards = 5 + Math.floor(rand(4) * 6)
+        resultType = 'completion'
+        clockDelta = 22 + Math.floor(rand(6) * 6)
+      } else if (r < 0.88) {
+        // Incompletion — stops clock
+        yards = 0
+        resultType = 'incompletion'
+        clockDelta = 33 + Math.floor(rand(4) * 5)
+      } else {
+        // Explosive play — defense got beat
+        yards = 15 + Math.floor(rand(5) * 20)
+        resultType = 'completion'
+        clockDelta = 14 + Math.floor(rand(4) * 8)
+      }
+
+      // Check for opponent touchdown
+      const newYardLine = Math.min(100, prev.yardLine + yards) // opponent moves toward OUR goal
+      if (newYardLine >= 100) {
+        touchdown = true
+        yards = 100 - prev.yardLine
+        resultType = 'touchdown'
+      }
+
+      const newClock = Math.max(0, prev.gameClockSeconds - clockDelta)
+      let newStatus = prev.status
+      let newResult = prev.result
+
+      if (touchdown) {
+        // Opponent scores — we lose unless we can answer
+        const newOppScore = prev.oppScore + 7
+        if (newClock <= 0) {
+          newStatus = 'game-over'
+          newResult = prev.ourScore > newOppScore ? 'win' : prev.ourScore < newOppScore ? 'loss' : 'tie'
+        } else if (newClock <= 15) {
+          newStatus = 'game-over'
+          newResult = 'loss'
+        }
+        // Give us the ball back if time remains
+        return {
+          ...prev,
+          oppScore: newOppScore,
+          gameClockSeconds: newClock,
+          possession: newStatus === 'game-over' ? prev.possession : ('us' as const),
+          down: 1,
+          distance: 10,
+          yardLine: 25,
+          status: newStatus,
+          result: newResult,
+          driveHistory: [
+            ...prev.driveHistory,
+            {
+              down: prev.down,
+              distance: prev.distance,
+              yardLine: prev.yardLine,
+              playId: `DEF-${defensiveConcept}`,
+              playName: `Defensive: ${defensiveConcept} → TD allowed`,
+              concept: defensiveConcept.toLowerCase().replace(/\s/g, '_'),
+              yardsGained: yards,
+              resultType: 'touchdown' as const,
+              clockDeltaSeconds: clockDelta,
+              newDown: 1,
+              newDistance: 10,
+              newYardLine: 100,
+              timestamp: Date.now(),
+            },
+          ],
+        }
+      }
+
+      // Clock expired
+      if (newClock <= 0) {
+        newStatus = 'game-over'
+        newResult = prev.ourScore > prev.oppScore ? 'win' : prev.ourScore < prev.oppScore ? 'loss' : 'tie'
+      }
+
+      // Check for turnover on downs (opponent 4th down fail)
+      const newDist = prev.distance - yards
+      const isFourthDownFail = prev.down === 4 && newDist > 0
+      if (isFourthDownFail && !touchdown) {
+        // We get the ball back!
+        return {
+          ...prev,
+          gameClockSeconds: newClock,
+          possession: 'us' as const,
+          down: 1,
+          distance: 10,
+          yardLine: 100 - newYardLine,
+          status: newStatus,
+          result: newResult,
+          driveHistory: [
+            ...prev.driveHistory,
+            {
+              down: prev.down,
+              distance: prev.distance,
+              yardLine: prev.yardLine,
+              playId: `DEF-${defensiveConcept}`,
+              playName: `Defensive: ${defensiveConcept} → STOP!`,
+              concept: defensiveConcept.toLowerCase().replace(/\s/g, '_'),
+              yardsGained: yards,
+              resultType: yards < 0 ? 'sack' : 'incompletion',
+              clockDeltaSeconds: clockDelta,
+              newDown: 1,
+              newDistance: 10,
+              newYardLine: 100 - newYardLine,
+              timestamp: Date.now(),
+            },
+          ],
+        }
+      }
+
+      // Opponent continues drive
+      const nextDown = newDist <= 0 ? 1 : prev.down + 1
+      const nextDistance = newDist <= 0 ? 10 : newDist
+
+      return {
+        ...prev,
+        gameClockSeconds: newClock,
+        down: nextDown,
+        distance: nextDistance,
+        yardLine: newYardLine,
+        status: newStatus,
+        result: newResult,
+        driveHistory: [
+          ...prev.driveHistory,
+          {
+            down: prev.down,
+            distance: prev.distance,
+            yardLine: prev.yardLine,
+            playId: `DEF-${defensiveConcept}`,
+            playName: `Defensive: ${defensiveConcept}`,
+            concept: defensiveConcept.toLowerCase().replace(/\s/g, '_'),
+            yardsGained: yards,
+            resultType,
+            clockDeltaSeconds: clockDelta,
+            newDown: nextDown,
+            newDistance: nextDistance,
+            newYardLine,
+            timestamp: Date.now(),
+          },
+        ],
+      }
+    })
+  }
+
   function callTimeout() {
     setState((prev) => {
       if (prev.timeouts <= 0 || prev.status === 'game-over') return prev
@@ -793,21 +1018,13 @@ function TwoMinuteMain() {
             </Card>
           )}
 
-          {/* Possession lost message */}
+          {/* Defense mode — opponent has the ball, coach picks defensive calls */}
           {!isGameOver && state.possession === 'them' && (
-            <Card className="p-6 text-center border-chart-5/40 bg-chart-5/5">
-              <div className="flex justify-center mb-2 text-chart-5">
-                <AlertTriangle className="size-8" />
-              </div>
-              <div className="text-base font-semibold">Possession lost</div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Opponent will run out the clock. Reset to try again.
-              </p>
-              <Button onClick={reset} variant="outline" size="sm" className="mt-4">
-                <RotateCcw className="size-3.5 mr-1.5" />
-                Reset simulation
-              </Button>
-            </Card>
+            <DefenseMode
+              state={state}
+              onDefensiveCall={(concept) => callDefensivePlay(concept)}
+              onReset={reset}
+            />
           )}
         </div>
 
@@ -899,6 +1116,94 @@ function TwoMinuteMain() {
         </div>
       </div>
     </div>
+  )
+}
+
+// ---------- Defense Mode Component ----------
+
+const DEFENSIVE_CALLS = [
+  { name: 'Cover 3 Match', type: 'coverage', icon: '🛡️', color: 'text-chart-5' },
+  { name: 'Quarters', type: 'coverage', icon: '🛡️', color: 'text-chart-5' },
+  { name: 'Cover 1 Robber', type: 'coverage', icon: '🛡️', color: 'text-chart-5' },
+  { name: 'Tampa 2', type: 'coverage', icon: '🛡️', color: 'text-chart-5' },
+  { name: 'Bracket', type: 'coverage', icon: '🛡️', color: 'text-chart-5' },
+  { name: 'Simulated Pressure', type: 'pressure', icon: '⚡', color: 'text-accent' },
+  { name: 'Creeper', type: 'pressure', icon: '⚡', color: 'text-accent' },
+  { name: 'Fire Zone', type: 'pressure', icon: '🔥', color: 'text-destructive' },
+]
+
+function DefenseMode({
+  state,
+  onDefensiveCall,
+  onReset,
+}: {
+  state: GameState
+  onDefensiveCall: (concept: string) => void
+  onReset: () => void
+}) {
+  const isThirdDown = state.down === 3
+  const isFourthDown = state.down === 4
+
+  return (
+    <Card className="p-4 border-l-4 border-l-chart-5 bg-chart-5/5">
+      <div className="flex items-center gap-2 mb-3">
+        <Shield className="size-4 text-chart-5" />
+        <h3 className="text-sm font-semibold uppercase tracking-widest font-mono text-muted-foreground">
+          Defense Mode — Their Ball
+        </h3>
+        <Badge
+          variant="outline"
+          className={cn(
+            'ml-auto text-[10px] font-mono',
+            isFourthDown
+              ? 'bg-accent/15 text-accent border-accent/30'
+              : isThirdDown
+              ? 'bg-chart-3/15 text-chart-3 border-chart-3/30'
+              : 'bg-muted text-muted-foreground'
+          )}
+        >
+          {state.down === 1 ? '1st' : state.down === 2 ? '2nd' : state.down === 3 ? '3rd' : '4th'}{' '}
+          &amp; {state.distance}
+        </Badge>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">
+        Opponent has the ball at their {state.yardLine < 50 ? `own ${state.yardLine}` : `our ${100 - state.yardLine}`}.
+        Pick a defensive call — the opponent will run a play against it.
+      </p>
+
+      {/* Defensive calls grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {DEFENSIVE_CALLS.map((call) => (
+          <button
+            key={call.name}
+            onClick={() => onDefensiveCall(call.name)}
+            className="group flex flex-col items-center gap-1 rounded-lg border border-border bg-background/40 hover:bg-chart-5/10 hover:border-chart-5/40 p-2.5 transition-all"
+          >
+            <span className="text-xl group-hover:scale-110 transition-transform">{call.icon}</span>
+            <span className={cn('text-[11px] font-semibold text-center', call.color)}>
+              {call.name}
+            </span>
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-[9px] font-mono',
+                call.type === 'pressure'
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-chart-5/10 text-chart-5 border-chart-5/30'
+              )}
+            >
+              {call.type}
+            </Badge>
+          </button>
+        ))}
+      </div>
+
+      {/* Reset button */}
+      <Button onClick={onReset} variant="outline" size="sm" className="w-full mt-3">
+        <RotateCcw className="size-3.5 mr-1.5" />
+        Reset simulation
+      </Button>
+    </Card>
   )
 }
 

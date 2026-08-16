@@ -14,6 +14,7 @@ import {
   Crosshair,
   Dumbbell,
   Eye,
+  FileText,
   Flame,
   Gamepad2,
   Layers,
@@ -454,6 +455,15 @@ function WeekPlanMain() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9"
+                onClick={() => window.open('/api/export-pdf?type=weekly', '_blank')}
+              >
+                <FileText className="size-3.5 mr-1.5" />
+                Export PDF
+              </Button>
             </div>
           </div>
 

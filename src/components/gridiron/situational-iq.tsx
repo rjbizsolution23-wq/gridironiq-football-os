@@ -295,10 +295,39 @@ function SituationalMain() {
 
   const snaps = data?.snapResults ?? []
 
-  const [down, setDown] = React.useState<DownBucket>('all')
-  const [distance, setDistance] = React.useState<DistanceBucket>('all')
-  const [hash, setHash] = React.useState<HashBucket>('all')
-  const [fieldZone, setFieldZone] = React.useState<FieldZoneBucket>('all')
+  // Deep-linkable filter state — reads from URL hash on mount, writes back on change
+  function readHashFilters() {
+    try {
+      const hash = window.location.hash.slice(1)
+      if (!hash) return null
+      const params = new URLSearchParams(hash)
+      return {
+        down: (params.get('down') as DownBucket) || 'all',
+        distance: (params.get('distance') as DistanceBucket) || 'all',
+        hash: (params.get('hash') as HashBucket) || 'all',
+        fieldZone: (params.get('zone') as FieldZoneBucket) || 'all',
+      }
+    } catch {
+      return null
+    }
+  }
+
+  const initial = readHashFilters()
+  const [down, setDown] = React.useState<DownBucket>(initial?.down ?? 'all')
+  const [distance, setDistance] = React.useState<DistanceBucket>(initial?.distance ?? 'all')
+  const [hash, setHash] = React.useState<HashBucket>(initial?.hash ?? 'all')
+  const [fieldZone, setFieldZone] = React.useState<FieldZoneBucket>(initial?.fieldZone ?? 'all')
+
+  // Write filters to URL hash when they change
+  React.useEffect(() => {
+    const params = new URLSearchParams()
+    if (down !== 'all') params.set('down', down)
+    if (distance !== 'all') params.set('distance', distance)
+    if (hash !== 'all') params.set('hash', hash)
+    if (fieldZone !== 'all') params.set('zone', fieldZone)
+    const hashStr = params.toString()
+    window.history.replaceState(null, '', hashStr ? `#${hashStr}` : window.location.pathname)
+  }, [down, distance, hash, fieldZone])
 
   const filtered = React.useMemo(
     () => filterSnaps(snaps, { down, distance, hash, fieldZone }),

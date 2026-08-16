@@ -218,6 +218,8 @@ function ClipAdder({ opponents }: { opponents: FilmData['opponents'] }) {
   const [opponentId, setOpponentId] = React.useState('')
   const [isPending, setIsPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [videoUrl, setVideoUrl] = React.useState<string | null>(null)
+  const [isUploading, setIsUploading] = React.useState(false)
   const onAddRef = React.useRef<(clip: FilmClip) => void>(() => {})
 
   // We expose a way to add via a parent — but to keep this self-contained,
@@ -283,11 +285,56 @@ function ClipAdder({ opponents }: { opponents: FilmData['opponents'] }) {
         </h3>
       </div>
       <p className="text-xs text-muted-foreground mb-3">
-        Describe what happened on the play in plain English. FilmIQ uses LLM to auto-tag
-        personnel, formation, motion, concept, coverage, pressure, result, and yards.
+        Upload a video clip for VLM frame analysis, or describe the play in plain English for LLM text tagging.
       </p>
 
       <div className="space-y-3">
+        {/* Video upload */}
+        <div>
+          <label className="text-[11px] text-muted-foreground font-mono uppercase tracking-wider block mb-1.5">
+            Upload Video (optional — MP4/MOV/WebM, max 500MB)
+          </label>
+          <input
+            type="file"
+            accept="video/mp4,video/quicktime,video/x-msvideofile,video/webm"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              setIsUploading(true)
+              setError(null)
+              try {
+                const formData = new FormData()
+                formData.append('file', file)
+                const r = await fetch('/api/upload-video', { method: 'POST', body: formData })
+                if (!r.ok) throw new Error(`Upload failed: ${r.status}`)
+                const json = await r.json()
+                setVideoUrl(json.url)
+                toast({
+                  title: 'Video uploaded',
+                  description: `${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB) uploaded successfully.`,
+                })
+              } catch (err) {
+                setError(err instanceof Error ? err.message : 'Upload failed')
+              } finally {
+                setIsUploading(false)
+              }
+            }}
+            className="w-full text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-primary file:text-primary-foreground file:cursor-pointer file:hover:bg-primary/90"
+          />
+          {isUploading && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Uploading video…
+            </div>
+          )}
+          {videoUrl && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-primary">
+              <CheckCircle2 className="size-3.5" />
+              Video uploaded — click "Analyze Frame with VLM" below
+            </div>
+          )}
+        </div>
+
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}

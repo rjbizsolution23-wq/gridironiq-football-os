@@ -5,6 +5,7 @@ import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-quer
 import {
   ClipboardList,
   Download,
+  FileText,
   ListChecks,
   Plus,
   Printer,
@@ -338,7 +339,16 @@ function CallSheetMain() {
             </Tabs>
             <Button variant="outline" size="sm" onClick={handleExport} className="h-8">
               <Download className="size-3.5 mr-1.5" />
-              Export
+              Export JSON
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('/api/export-pdf?type=callsheet', '_blank')}
+              className="h-8"
+            >
+              <FileText className="size-3.5 mr-1.5" />
+              PDF
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint} className="h-8">
               <Printer className="size-3.5 mr-1.5" />
