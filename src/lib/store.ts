@@ -31,6 +31,7 @@ export type ModuleId =
   | 'selfscout'
   | 'weekplan'
   | 'settings'
+  | 'accountability'
 
 export interface UINotice {
   id: string

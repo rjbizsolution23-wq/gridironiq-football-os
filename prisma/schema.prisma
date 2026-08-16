@@ -42,6 +42,9 @@ model Team {
   filmClips   FilmClip[]
   customDrills CustomDrill[]
   weeklyTasks WeeklyTask[]
+  learningEvents LearningEvent[]
+  assignments Assignment[]
+  masteryRecords MasteryRecord[]
 }
 
 model Player {
@@ -58,6 +61,8 @@ model Player {
   notes     String?
   quizScore Float?   // 0-100 mastery
   createdAt DateTime @default(now())
+  learningEvents LearningEvent[]
+  masteryRecords MasteryRecord[]
 }
 
 // ---------- PlaybookIQ — Play DNA ----------
@@ -271,4 +276,69 @@ model WeeklyTask {
   isCustom    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ---------- Player Accountability & Learning Analytics ----------
+
+model LearningEvent {
+  id            String   @id @default(cuid())
+  teamId        String?
+  team          Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId      String
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  assignmentId  String?
+  playId        String?
+  eventType     String
+  eventSource   String?
+  attemptNumber Int?
+  score         Float?
+  durationMs    Int?
+  correct       Boolean?
+  errorType     String?
+  metadata      String?
+  createdAt     DateTime @default(now())
+}
+
+model Assignment {
+  id              String   @id @default(cuid())
+  teamId          String?
+  team            Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  assignedBy      String?
+  positionGroup   String?
+  targetType      String
+  playId          String?
+  type            String
+  dueDate         DateTime?
+  priority        Int      @default(1)
+  requiredScore   Float?
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model MasteryRecord {
+  id                    String   @id @default(cuid())
+  teamId                String?
+  team                  Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId              String
+  player                Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playId                String?
+  concept               String?
+  formationRecognition  Float    @default(0)
+  alignmentAccuracy     Float    @default(0)
+  assignmentAccuracy    Float    @default(0)
+  routeAccuracy         Float    @default(0)
+  blockingRuleAccuracy  Float    @default(0)
+  readAccuracy          Float    @default(0)
+  adjustmentAccuracy    Float    @default(0)
+  defensiveRecognition  Float    @default(0)
+  recallAccuracy        Float    @default(0)
+  overallMastery         Float    @default(0)
+  confidence            Float    @default(0)
+  attemptCount          Int      @default(0)
+  lastReviewed          DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }

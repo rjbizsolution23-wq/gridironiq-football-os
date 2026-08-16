@@ -1,0 +1,3140 @@
+Yes. The player accountability layer should be one of the most important parts of the entire platform. Coaches should be able to answer, at any moment:
+
+**Who studied? What did they study? What did they complete? What did they miss? What did they get wrong? What do they still not understand? How long did they spend? What should we teach at practice tomorrow?**
+
+Below is the technical handoff I would give the build team.
+
+# GRIDIRONIQ™
+
+## Football Intelligence OS
+
+### Master Product and Engineering Handoff v1.0
+
+---
+
+# 1. Product mission
+
+GridironIQ is a multi-tenant football intelligence, coaching, learning, scouting, playbook, analytics, and player-development platform.
+
+The system serves two primary user groups.
+
+### Coaching staff
+
+Coaches need to:
+
+* Build and manage the playbook
+* Assign installations
+* Assign specific plays
+* Assign study sessions
+* Monitor player progress
+* See incomplete assignments
+* Review quiz results
+* Identify recurring mistakes
+* Track mastery
+* Track position-group readiness
+* Add corrections
+* Communicate with players
+* Build practices
+* Build call sheets
+* Scout opponents
+* Analyze tendencies
+* Review film
+* Manage player access
+* Maintain program history
+
+### Players
+
+Players need to:
+
+* Learn plays
+* Understand assignments
+* Watch animations
+* Hear coaching instructions
+* Study their position
+* Recognize formations
+* Recognize defenses
+* Practice alignments
+* Practice assignments
+* Take quizzes
+* Complete recall exercises
+* Review missed concepts
+* Earn mastery
+* Receive coach corrections
+* Know exactly what is due
+
+---
+
+# 2. Core system architecture
+
+```text
+GRIDIRONIQ
+│
+├── Coach OS
+│   ├── Dashboard
+│   ├── Team Management
+│   ├── Playbook
+│   ├── Installations
+│   ├── Player Progress
+│   ├── Practice Planning
+│   ├── Film
+│   ├── Scouting
+│   ├── Game Planning
+│   ├── Analytics
+│   └── Program Memory
+│
+├── Player Academy
+│   ├── My Assignments
+│   ├── Learn
+│   ├── Watch
+│   ├── Practice
+│   ├── Recall
+│   ├── Quiz
+│   ├── Review
+│   └── Mastery
+│
+├── Football Intelligence
+│   ├── Play DNA
+│   ├── Football Ontology
+│   ├── Knowledge Graph
+│   ├── Recommendation Engine
+│   ├── AI Tutor
+│   └── AI Coaching Agents
+│
+├── Analytics Engine
+│   ├── Player Analytics
+│   ├── Team Analytics
+│   ├── Learning Analytics
+│   ├── Football Analytics
+│   └── Scout Analytics
+│
+└── Platform Services
+    ├── Authentication
+    ├── RBAC
+    ├── Notifications
+    ├── Audit Logs
+    ├── Billing
+    ├── Security
+    ├── File Storage
+    ├── Video
+    └── Integrations
+```
+
+---
+
+# 3. User hierarchy
+
+```text
+DISTRICT
+   │
+   ├── SCHOOL
+   │    │
+   │    ├── PROGRAM
+   │    │    │
+   │    │    ├── TEAM
+   │    │    │    │
+   │    │    │    ├── SEASON
+   │    │    │    ├── STAFF
+   │    │    │    └── PLAYERS
+```
+
+Example:
+
+```text
+Royse City ISD
+│
+├── Ouida Baley Middle School
+│   └── Football
+│       ├── 7th Grade
+│       └── 8th Grade
+│
+└── Royse City High School
+    └── Football
+        ├── Freshman
+        ├── JV
+        └── Varsity
+```
+
+This structure allows eventual district-wide vertical alignment without mixing confidential team permissions.
+
+---
+
+# 4. Roles and permissions
+
+Minimum roles:
+
+```text
+SUPER_ADMIN
+
+DISTRICT_ADMIN
+
+SCHOOL_ADMIN
+
+ATHLETIC_DIRECTOR
+
+HEAD_COACH
+
+OFFENSIVE_COORDINATOR
+
+DEFENSIVE_COORDINATOR
+
+SPECIAL_TEAMS_COORDINATOR
+
+POSITION_COACH
+
+ANALYST
+
+PLAYER
+
+PARENT_GUARDIAN
+
+READ_ONLY
+```
+
+Permissions must be policy based.
+
+Do not hard-code:
+
+```text
+if user.role == "coach"
+```
+
+Use:
+
+```text
+can_view_player_progress
+can_assign_content
+can_edit_playbook
+can_view_private_notes
+can_view_opponent_scout
+can_manage_users
+can_export_data
+can_manage_security
+```
+
+---
+
+# 5. Coach Command Center
+
+The primary coach dashboard should immediately answer:
+
+```text
+How prepared is my team?
+
+Who has not completed today's work?
+
+What concepts are players missing?
+
+Which position group is struggling?
+
+What should we review today?
+```
+
+Dashboard:
+
+```text
+TEAM MASTERY
+89%
+
+PLAYERS READY
+37 / 44
+
+NEEDS REVIEW
+5
+
+NOT READY
+2
+
+TODAY'S ASSIGNMENTS
+91% completion
+
+OVERDUE
+8 items
+
+AVERAGE STUDY TIME
+14m 22s
+
+WEEKLY STUDY
+9.4 hours
+```
+
+Then position groups:
+
+```text
+QB        96%
+RB        92%
+WR        86%
+TE        81%
+OL        94%
+
+DL        91%
+LB        88%
+DB        84%
+```
+
+---
+
+# 6. Player Accountability Center
+
+This should be a dedicated coach module.
+
+Route:
+
+```text
+/app/players/progress
+```
+
+Coach sees a grid:
+
+| Player | Assigned | Completed | Overdue | Mastery | Last Active | Status    |
+| ------ | -------: | --------: | ------: | ------: | ----------- | --------- |
+| #7 QB  |       18 |        18 |       0 |     96% | 8:41 PM     | Ready     |
+| #22 RB |       18 |        15 |       3 |     88% | Yesterday   | Review    |
+| #84 TE |       18 |         9 |       9 |     71% | 3 days      | Not Ready |
+
+Clicking a player opens their full learning record.
+
+---
+
+# 7. Individual player intelligence profile
+
+Route:
+
+```text
+/app/players/:playerId/progress
+```
+
+Display:
+
+```text
+PLAYER
+#84
+
+POSITION
+TE
+
+CURRENT MASTERY
+71%
+
+ASSIGNMENTS
+18
+
+COMPLETED
+9
+
+INCOMPLETE
+9
+
+OVERDUE
+6
+
+STUDY TIME THIS WEEK
+42 minutes
+
+CURRENT STREAK
+2 days
+
+LAST ACTIVE
+August 14, 8:42 PM
+```
+
+Then breakdown:
+
+```text
+FORMATION
+92%
+
+ALIGNMENT
+94%
+
+ASSIGNMENT
+68%
+
+DEFENSIVE RECOGNITION
+72%
+
+ADJUSTMENTS
+61%
+
+RECALL
+69%
+```
+
+---
+
+# 8. Complete activity history
+
+Coaches need full drill-down.
+
+Every meaningful action becomes an event.
+
+Example:
+
+```text
+8:41 PM
+Opened Counter GT lesson
+
+8:43 PM
+Watched animation
+Completed 100%
+
+8:46 PM
+Attempted alignment challenge
+Incorrect
+
+8:47 PM
+Attempted alignment challenge
+Correct
+
+8:50 PM
+Quiz attempt
+Score: 70%
+
+8:52 PM
+Reviewed incorrect question
+
+8:54 PM
+Recall attempt
+Failed
+
+8:57 PM
+Recall attempt
+Passed
+```
+
+This creates accountability without relying on vague "logged in" metrics.
+
+---
+
+# 9. Event-sourced learning analytics
+
+Create an immutable activity event table.
+
+```sql
+learning_events
+```
+
+Suggested schema:
+
+```text
+id
+organization_id
+team_id
+season_id
+player_id
+assignment_id
+play_id
+lesson_id
+event_type
+event_source
+attempt_number
+score
+duration_ms
+correct
+metadata_json
+device_id
+session_id
+created_at
+```
+
+Important event types:
+
+```text
+ASSIGNMENT_ASSIGNED
+
+ASSIGNMENT_VIEWED
+
+LESSON_STARTED
+
+LESSON_COMPLETED
+
+VIDEO_STARTED
+
+VIDEO_COMPLETED
+
+PLAY_ANIMATION_VIEWED
+
+COACH_AUDIO_PLAYED
+
+QUIZ_STARTED
+
+QUESTION_ANSWERED
+
+QUIZ_COMPLETED
+
+ALIGNMENT_ATTEMPT
+
+ASSIGNMENT_ATTEMPT
+
+ROUTE_DRAW_ATTEMPT
+
+FORMATION_ATTEMPT
+
+COVERAGE_ATTEMPT
+
+RECALL_ATTEMPT
+
+REVIEW_STARTED
+
+REVIEW_COMPLETED
+
+MASTERY_GAINED
+
+MASTERY_LOST
+
+ASSIGNMENT_OVERDUE
+
+COACH_NOTE_ADDED
+
+COACH_REVIEW_REQUIRED
+
+COACH_REVIEW_COMPLETED
+```
+
+Do not overwrite historical attempts.
+
+Append events.
+
+---
+
+# 10. Assignment engine
+
+Coaches must be able to assign:
+
+```text
+Single play
+
+Play family
+
+Formation
+
+Concept
+
+Position assignment
+
+Quiz
+
+Installation package
+
+Film clip
+
+Opponent lesson
+
+Defensive recognition exercise
+
+Practice homework
+
+Weekly study package
+```
+
+Assignments need:
+
+```text
+title
+
+description
+
+assigned_by
+
+assigned_to
+
+position_group
+
+individual_player
+
+team
+
+start_date
+
+due_date
+
+priority
+
+required_score
+
+required_mastery
+
+minimum_attempts
+
+estimated_duration
+
+prerequisites
+```
+
+---
+
+# 11. Assignment states
+
+```text
+NOT_STARTED
+
+IN_PROGRESS
+
+COMPLETED
+
+FAILED_REQUIREMENTS
+
+NEEDS_REVIEW
+
+OVERDUE
+
+EXCUSED
+
+REASSIGNED
+```
+
+A player should not receive "completed" simply because they opened the assignment.
+
+Completion rules must be configurable.
+
+Example:
+
+```text
+Watch animation: 100%
+Quiz: minimum 85%
+Recall challenge: pass
+Alignment challenge: pass
+```
+
+Only then:
+
+```text
+ASSIGNMENT COMPLETE
+```
+
+---
+
+# 12. Coach-created installation packages
+
+Example:
+
+```text
+WEEK 4 INSTALL
+vs Central High
+
+DUE
+Wednesday 8:00 PM
+
+REQUIRED
+
+Gun Trips
+Inside Zone
+Counter
+Mesh
+Jet Sweep
+Cover 3 recognition
+Quarters recognition
+```
+
+Coach can assign to:
+
+```text
+Whole team
+
+Offense
+
+Defense
+
+Position group
+
+Individual players
+```
+
+---
+
+# 13. Mastery engine
+
+Do not use one simple quiz score.
+
+Mastery should be multidimensional.
+
+```text
+formation_recognition
+
+alignment_accuracy
+
+assignment_accuracy
+
+route_accuracy
+
+blocking_rule_accuracy
+
+read_accuracy
+
+adjustment_accuracy
+
+defensive_recognition
+
+recall_accuracy
+
+situational_accuracy
+```
+
+Overall:
+
+```text
+mastery_score =
+weighted combination
+```
+
+Weights can differ by position.
+
+Example QB:
+
+```text
+Formation                 10%
+Alignment                  5%
+Assignment                15%
+Coverage Recognition      20%
+Read Identification       20%
+Adjustment                15%
+Recall                    15%
+```
+
+Example OL:
+
+```text
+Formation                 10%
+Alignment                 15%
+Assignment                20%
+Front Recognition         20%
+Blocking Rule             20%
+Adjustment                10%
+Recall                     5%
+```
+
+---
+
+# 14. Confidence-aware mastery
+
+Do not treat:
+
+```text
+1 correct answer
+```
+
+the same as:
+
+```text
+15 correct answers over 3 weeks
+```
+
+Store:
+
+```text
+mastery_score
+confidence_score
+attempt_count
+recent_accuracy
+long_term_accuracy
+last_reviewed
+```
+
+A player can therefore show:
+
+```text
+Mastery: 95%
+Confidence: Low
+```
+
+if there is insufficient evidence.
+
+---
+
+# 15. Forgetting and retention model
+
+This is essential to the "they can't forget it" goal.
+
+The system should intentionally retest information later.
+
+Use spaced retrieval.
+
+Review windows:
+
+```text
+Initial learning
+
+24 hours
+
+3 days
+
+7 days
+
+14 days
+
+30 days
+
+Coach-configurable
+```
+
+If mastery drops:
+
+```text
+automatic review assignment
+```
+
+---
+
+# 16. Smart Review Queue
+
+Player home screen:
+
+```text
+TODAY
+
+11 minutes
+
+3 items need review
+
+Counter GT
+2 min
+
+Cover 3 Recognition
+4 min
+
+Gun Trips Alignment
+5 min
+```
+
+Prioritization formula:
+
+```text
+Upcoming install importance
+
+Due date
+
+Previous errors
+
+Time since review
+
+Mastery weakness
+
+Coach priority
+
+Game-plan relevance
+```
+
+---
+
+# 17. Error taxonomy
+
+The system should know why an athlete got something wrong.
+
+Examples:
+
+```text
+WRONG_FORMATION
+
+WRONG_ALIGNMENT
+
+WRONG_ROUTE
+
+WRONG_DEPTH
+
+WRONG_RELEASE
+
+WRONG_BLOCKING_TARGET
+
+WRONG_READ
+
+WRONG_COVERAGE
+
+WRONG_FRONT
+
+WRONG_ADJUSTMENT
+
+WRONG_DIRECTION
+
+CONFUSED_PLAY_FAMILY
+
+SLOW_RECALL
+```
+
+This allows meaningful coaching recommendations.
+
+---
+
+# 18. Misconception engine
+
+Example:
+
+```text
+PLAYER #84
+
+PATTERN DETECTED
+
+Player has confused Counter and Power
+on 4 of last 6 attempts.
+
+Confidence:
+High
+
+Recommended:
+Counter vs Power comparison lesson
+```
+
+Coach can click:
+
+```text
+ASSIGN REVIEW
+```
+
+---
+
+# 19. Coach Intervention Center
+
+The system automatically generates a queue:
+
+```text
+PLAYERS NEEDING ATTENTION
+```
+
+Examples:
+
+```text
+#84 TE
+Assignment mastery below 70%
+
+#11 WR
+3 overdue assignments
+
+#55 OL
+Repeated incorrect front identification
+
+#2 DB
+Has not logged in for 4 days
+
+#9 QB
+Coverage recognition dropped 14%
+```
+
+Coach can:
+
+```text
+Send reminder
+
+Assign review
+
+Add private note
+
+Add player-visible feedback
+
+Mark excused
+
+Schedule intervention
+
+Message position coach
+```
+
+---
+
+# 20. Coach progress filters
+
+Coaches need filters for:
+
+```text
+Team
+
+Grade
+
+Position
+
+Position group
+
+Offense
+
+Defense
+
+Player
+
+Play
+
+Formation
+
+Concept
+
+Assignment
+
+Date
+
+Completion status
+
+Mastery range
+
+Overdue
+
+Needs review
+```
+
+---
+
+# 21. Accountability audit
+
+Coach should be able to answer:
+
+> Did #22 really complete this before Wednesday?
+
+Open assignment.
+
+```text
+ASSIGNED
+Monday 4:11 PM
+
+FIRST OPENED
+Monday 8:22 PM
+
+ATTEMPTS
+4
+
+ACTIVE STUDY TIME
+13m 42s
+
+QUIZ
+88%
+
+RECALL
+Passed
+
+COMPLETED
+Tuesday 7:17 PM
+```
+
+No ambiguity.
+
+---
+
+# 22. Anti-cheating controls
+
+We should discourage gaming the learning system.
+
+Examples:
+
+```text
+Randomized question order
+
+Randomized answer order
+
+Question pools
+
+Timed recall
+
+Required active interaction
+
+Minimum watch thresholds
+
+Impossible-speed detection
+
+Duplicate-session detection
+
+Repeated-pattern detection
+```
+
+Do not rely exclusively on time spent.
+
+Measure demonstrated knowledge.
+
+---
+
+# 23. Coach alerts
+
+Configurable notifications:
+
+```text
+Player overdue
+
+Player inactive
+
+Assignment completed
+
+Player mastery below threshold
+
+Player mastery improved
+
+Team readiness below target
+
+Position group below threshold
+
+Installation deadline approaching
+```
+
+Notification channels:
+
+```text
+In-app
+
+Email
+
+Push notification
+```
+
+SMS can be added later if district-approved.
+
+---
+
+# 24. Parent / guardian portal
+
+Optional district feature.
+
+Parent sees only:
+
+```text
+Assigned work
+
+Completion
+
+General progress
+
+Upcoming deadlines
+```
+
+Not:
+
+```text
+Depth chart
+
+Internal evaluations
+
+Opponent scout
+
+Private coach notes
+
+Team strategy
+```
+
+---
+
+# 25. Player Academy home screen
+
+```text
+GOOD AFTERNOON, #22
+
+WEEKLY MASTERY
+88%
+
+TODAY
+12 minutes remaining
+
+3 / 5 complete
+
+NEXT
+Counter GT Review
+
+UPCOMING
+Thursday 8 PM
+
+STREAK
+6 days
+```
+
+Primary actions:
+
+```text
+CONTINUE STUDYING
+
+MY PLAYBOOK
+
+MY ASSIGNMENTS
+
+REVIEW
+
+QUIZZES
+
+MY PROGRESS
+```
+
+---
+
+# 26. Interactive play learning modes
+
+Every play should support:
+
+```text
+LEARN
+
+WATCH
+
+MY POSITION
+
+ALIGNMENT
+
+ASSIGNMENT
+
+DRAW IT
+
+RECOGNIZE
+
+ADJUST
+
+RECALL
+
+QUIZ
+```
+
+---
+
+# 27. Learn Mode
+
+Shows:
+
+```text
+Play name
+
+Formation
+
+Personnel
+
+Motion
+
+Concept
+
+Player assignment
+
+Coach note
+
+Key landmark
+
+Common mistake
+```
+
+---
+
+# 28. Watch Mode
+
+Interactive animation:
+
+```text
+Play
+
+Pause
+
+Replay
+
+0.25x
+
+0.5x
+
+1x
+
+2x
+```
+
+Views:
+
+```text
+All-22
+
+QB
+
+Position
+
+End Zone
+```
+
+---
+
+# 29. My Position Mode
+
+Everything else dims.
+
+Only the player's responsibility is emphasized.
+
+Example:
+
+```text
+YOU ARE H
+
+ALIGNMENT
+#2 trips
+
+ASSIGNMENT
+Bubble
+
+LANDMARK
+Gain width immediately
+
+RULE
+Follow coach-defined perimeter rule
+```
+
+---
+
+# 30. Alignment Challenge
+
+Blank field.
+
+System calls:
+
+```text
+Gun Trips Right
+```
+
+Player taps their location.
+
+Score:
+
+```text
+Correct side
+
+Correct depth
+
+Correct split
+
+Correct LOS status
+```
+
+---
+
+# 31. Assignment Challenge
+
+Player is placed correctly.
+
+Question:
+
+```text
+What is your job?
+```
+
+Options could include:
+
+```text
+Route
+
+Block
+
+Motion
+
+Read
+
+Fake
+
+Protection
+
+Adjustment
+```
+
+---
+
+# 32. Draw-It Challenge
+
+Player draws their route or movement.
+
+Compare:
+
+```text
+origin
+
+direction
+
+depth
+
+landmark
+
+ending position
+```
+
+Do not require pixel-perfect geometry.
+
+Use tolerance corridors.
+
+---
+
+# 33. Defensive Recognition
+
+Player sees a defensive shell.
+
+Questions:
+
+```text
+What front?
+
+What coverage?
+
+Where is the Mike?
+
+Who is the apex?
+
+Where is pressure likely?
+
+Who is your conflict defender?
+```
+
+---
+
+# 34. Adjustment Challenge
+
+Play begins one way.
+
+Defense shifts.
+
+Player must respond.
+
+```text
+Safety rolls down.
+
+What changes?
+```
+
+or:
+
+```text
+Corner travels with motion.
+
+What information did you gain?
+```
+
+---
+
+# 35. Recall Mode
+
+No graphics.
+
+```text
+Gun Trips Right F Jet 18 Zone Read
+
+You are X.
+
+What is your assignment?
+```
+
+This should carry a high mastery weighting.
+
+---
+
+# 36. Coach audio and video teaching
+
+Coaches can attach:
+
+```text
+Voice note
+
+Video explanation
+
+Text note
+
+Diagram annotation
+
+Film example
+```
+
+A play therefore becomes a reusable coaching lesson.
+
+---
+
+# 37. Coach corrections
+
+After practice:
+
+Coach opens:
+
+```text
+Counter GT
+```
+
+Adds:
+
+> Backside TE needs to stay tighter on the hinge block.
+
+Assign to:
+
+```text
+All TEs
+```
+
+Every relevant athlete receives the correction.
+
+---
+
+# 38. Film linkage
+
+Every play can have:
+
+```text
+Diagram
+
+Animation
+
+Practice example
+
+Good game example
+
+Bad game example
+
+Opponent example
+```
+
+Players see theory and reality.
+
+---
+
+# 39. Playbook data model
+
+Core entities:
+
+```text
+playbooks
+
+playbook_versions
+
+plays
+
+play_versions
+
+play_families
+
+personnel_groups
+
+formations
+
+formation_positions
+
+motions
+
+shifts
+
+concepts
+
+assignments
+
+assignment_rules
+
+routes
+
+blocks
+
+protections
+
+reads
+
+adjustments
+
+coach_notes
+```
+
+---
+
+# 40. Player learning data model
+
+```text
+learning_assignments
+
+assignment_targets
+
+learning_modules
+
+lessons
+
+lesson_steps
+
+quizzes
+
+questions
+
+question_options
+
+quiz_attempts
+
+question_attempts
+
+skill_attempts
+
+mastery_records
+
+mastery_history
+
+review_queue
+
+learning_events
+
+coach_feedback
+
+player_progress_snapshots
+```
+
+---
+
+# 41. Suggested player_progress snapshot
+
+```json
+{
+  "player_id": "player_84",
+  "team_id": "baley_8th",
+  "mastery": 0.82,
+  "completion_rate": 0.91,
+  "overdue_count": 2,
+  "study_minutes_7d": 64,
+  "streak_days": 5,
+  "formation_mastery": 0.96,
+  "alignment_mastery": 0.91,
+  "assignment_mastery": 0.78,
+  "recognition_mastery": 0.73,
+  "adjustment_mastery": 0.71,
+  "recall_mastery": 0.76,
+  "status": "needs_review"
+}
+```
+
+---
+
+# 42. Football-specific schema
+
+```text
+games
+
+drives
+
+snaps
+
+opponents
+
+scouting_reports
+
+formations_seen
+
+motions_seen
+
+fronts_seen
+
+coverages_seen
+
+pressures_seen
+
+tendencies
+
+gameplans
+
+call_sheets
+
+practice_plans
+
+practice_periods
+```
+
+---
+
+# 43. AI architecture
+
+Do not let one LLM control everything.
+
+Use an orchestrator plus specialized agents.
+
+```text
+FOOTBALL ORCHESTRATOR
+│
+├── Playbook Agent
+├── Player Tutor Agent
+├── Learning Agent
+├── Coach Analytics Agent
+├── Scout Agent
+├── Film Agent
+├── Game Plan Agent
+├── Practice Agent
+├── Rules Agent
+├── Privacy Agent
+└── QA Agent
+```
+
+---
+
+# 44. Team-Specific AI Tutor
+
+Retrieval order:
+
+```text
+1. Coach-approved play content
+2. Team terminology
+3. Position rules
+4. Coach notes
+5. Team film annotations
+6. Approved generic football corpus
+```
+
+The AI should never silently override team doctrine.
+
+Response metadata:
+
+```text
+source_play_id
+
+play_version
+
+coach_approved
+
+confidence
+
+source_reference
+```
+
+---
+
+# 45. AI safety rule
+
+If team information does not contain the answer:
+
+The tutor should say:
+
+```text
+This assignment has not been defined by your coaching staff.
+Ask your coach for clarification.
+```
+
+Do not hallucinate a football assignment.
+
+---
+
+# 46. Analytics engine
+
+Three separate analytics domains.
+
+### Learning analytics
+
+```text
+Completion
+
+Mastery
+
+Retention
+
+Study frequency
+
+Error patterns
+
+Attempt counts
+
+Recall
+
+Learning velocity
+```
+
+### Football analytics
+
+```text
+Success rate
+
+Yards/play
+
+Explosive rate
+
+Efficiency
+
+Situation
+
+Concept performance
+```
+
+### Operational analytics
+
+```text
+Coach usage
+
+Assignment volume
+
+Install completion
+
+Player participation
+
+Team readiness
+```
+
+---
+
+# 47. Team Readiness Score
+
+Build a configurable index.
+
+Example:
+
+```text
+35% assignment mastery
+
+25% recall mastery
+
+15% formation recognition
+
+15% adjustment mastery
+
+10% assignment completion
+```
+
+Display:
+
+```text
+TEAM READINESS
+91 / 100
+```
+
+Also:
+
+```text
+OFFENSE
+94
+
+DEFENSE
+87
+
+SPECIAL TEAMS
+89
+```
+
+---
+
+# 48. Readiness by play
+
+```text
+Inside Zone       96%
+Counter            92%
+Mesh               86%
+Flood              83%
+Jet Sweep          98%
+```
+
+Coach knows precisely what needs attention.
+
+---
+
+# 49. Readiness heat map
+
+Matrix:
+
+```text
+              QB  RB  WR  TE  OL
+
+Inside Zone   97  96  91  88  95
+Counter       94  93  90  71  96
+Mesh          92  88  84  89  N/A
+```
+
+The 71 immediately tells the staff what needs work.
+
+---
+
+# 50. Practice recommendation engine
+
+Connect player learning with practice planning.
+
+Input:
+
+```text
+Mastery
+
+Recent errors
+
+Game-plan priority
+
+Coach-selected priorities
+
+Practice time
+```
+
+Output:
+
+```text
+Recommended Tuesday emphasis
+
+Counter
+8 minutes
+
+TE assignment mastery is 71%.
+
+Cover 3 recognition
+5 minutes
+
+WR recognition is 76%.
+
+Red-zone Mesh
+6 minutes
+
+Team recall is 79%.
+```
+
+Coach approves or rejects recommendations.
+
+---
+
+# 51. Program Memory
+
+Store:
+
+```text
+Seasons
+
+Playbooks
+
+Versions
+
+Coach notes
+
+Install history
+
+Player learning
+
+Practice plans
+
+Games
+
+Scouting
+
+Outcomes
+
+Corrections
+```
+
+New seasons inherit only approved information.
+
+---
+
+# 52. Security architecture
+
+Minimum:
+
+```text
+TLS 1.3
+
+AES-256 at rest
+
+Tenant isolation
+
+Row-level security
+
+MFA for staff
+
+Passkeys optional
+
+Session management
+
+Signed media URLs
+
+Object storage encryption
+
+Audit logs
+
+Rate limits
+
+WAF
+
+CSRF protection
+
+XSS protection
+
+SQL injection protection
+
+Secrets manager
+
+Automated backups
+
+Disaster recovery
+```
+
+---
+
+# 53. Student privacy design
+
+District mode:
+
+```text
+No advertising
+
+No sale of student information
+
+No targeted ads
+
+No cross-school data sharing
+
+No public AI training from identifiable student data
+
+Minimal student data
+
+Configurable retention
+
+Export capability
+
+Deletion capability
+
+Parent/guardian workflows
+
+Staff access logs
+```
+
+---
+
+# 54. Data isolation
+
+Required hierarchy:
+
+```text
+tenant_id
+organization_id
+school_id
+team_id
+season_id
+```
+
+Every sensitive table should carry the appropriate tenant boundary.
+
+Use PostgreSQL RLS where practical.
+
+---
+
+# 55. Audit logging
+
+Separate from learning events.
+
+```text
+audit_events
+```
+
+Track:
+
+```text
+User login
+
+Failed login
+
+Role change
+
+Playbook export
+
+Player added
+
+Player removed
+
+Coach added
+
+Play changed
+
+Play deleted
+
+Assignment changed
+
+Data export
+
+Video accessed
+
+Permission changed
+
+AI request
+
+Admin action
+```
+
+---
+
+# 56. Recommended technology stack
+
+Frontend:
+
+```text
+Next.js
+React
+TypeScript
+Tailwind
+shadcn/ui
+```
+
+Mobile:
+
+```text
+React Native
+Expo
+```
+
+Backend:
+
+```text
+TypeScript
+Fastify or Hono
+
+Python
+FastAPI
+```
+
+Data:
+
+```text
+PostgreSQL
+
+pgvector
+
+Redis
+
+ClickHouse later
+```
+
+Media:
+
+```text
+Cloudflare R2
+
+Cloudflare Stream
+```
+
+Infrastructure:
+
+```text
+Cloudflare
+
+Docker
+
+Terraform
+
+GitHub Actions
+```
+
+Observability:
+
+```text
+OpenTelemetry
+
+Sentry
+
+Grafana
+
+structured logs
+```
+
+---
+
+# 57. Suggested service architecture
+
+```text
+apps/
+├── web
+├── mobile
+└── admin
+
+services/
+├── api
+├── ai
+├── analytics
+├── video
+├── notifications
+└── workers
+
+packages/
+├── auth
+├── db
+├── football-domain
+├── learning-engine
+├── ui
+├── validation
+├── telemetry
+└── config
+```
+
+---
+
+# 58. Repository layout
+
+```text
+gridironiq/
+│
+├── apps/
+│   ├── web/
+│   ├── mobile/
+│   └── admin/
+│
+├── services/
+│   ├── api/
+│   ├── ai/
+│   ├── analytics/
+│   ├── video/
+│   └── workers/
+│
+├── packages/
+│   ├── database/
+│   ├── auth/
+│   ├── football-domain/
+│   ├── learning-engine/
+│   ├── mastery-engine/
+│   ├── play-renderer/
+│   ├── ui/
+│   ├── schemas/
+│   └── observability/
+│
+├── infrastructure/
+│   ├── terraform/
+│   ├── cloudflare/
+│   ├── docker/
+│   └── github-actions/
+│
+├── docs/
+│   ├── product/
+│   ├── architecture/
+│   ├── security/
+│   ├── privacy/
+│   ├── api/
+│   ├── database/
+│   └── pilot/
+│
+└── tests/
+    ├── unit/
+    ├── integration/
+    ├── e2e/
+    ├── security/
+    └── performance/
+```
+
+---
+
+# 59. Core API surface
+
+```text
+POST   /api/v1/auth/login
+
+GET    /api/v1/teams
+POST   /api/v1/teams
+
+GET    /api/v1/players
+GET    /api/v1/players/:id
+
+GET    /api/v1/players/:id/progress
+
+GET    /api/v1/playbooks
+POST   /api/v1/playbooks
+
+GET    /api/v1/plays/:id
+POST   /api/v1/plays
+
+POST   /api/v1/assignments
+GET    /api/v1/assignments
+
+POST   /api/v1/assignments/:id/start
+
+POST   /api/v1/learning/events
+
+POST   /api/v1/quizzes/:id/attempt
+
+GET    /api/v1/mastery/player/:id
+
+GET    /api/v1/mastery/team
+
+GET    /api/v1/readiness/team
+
+GET    /api/v1/coach/interventions
+
+POST   /api/v1/coach/feedback
+
+POST   /api/v1/ai/tutor
+
+POST   /api/v1/ai/recommendations
+```
+
+---
+
+# 60. Real-time coach view
+
+Use WebSockets or Server-Sent Events.
+
+Coach can optionally watch:
+
+```text
+17 players currently studying
+
+#22 completed Counter
+
+#84 failed Recall
+
+#11 completed installation
+
+Team completion:
+84% → 86%
+```
+
+This should be optional and not intrusive.
+
+---
+
+# 61. Offline player mode
+
+Mobile client caches:
+
+```text
+Assigned lessons
+
+Play diagrams
+
+Animations
+
+Questions
+
+Coach notes
+```
+
+Local progress queue:
+
+```text
+offline_events
+```
+
+When connection returns:
+
+```text
+sync
+deduplicate
+validate
+persist
+recalculate mastery
+```
+
+---
+
+# 62. Notification service
+
+Events:
+
+```text
+assignment.created
+
+assignment.due_soon
+
+assignment.overdue
+
+mastery.threshold_crossed
+
+coach.feedback_added
+
+review.available
+
+install.updated
+```
+
+Destinations:
+
+```text
+mobile push
+email
+in-app inbox
+```
+
+---
+
+# 63. Design system
+
+Coach mode:
+
+```text
+Dense information
+Fast navigation
+Tables
+Filters
+Heat maps
+Dashboards
+Keyboard friendly
+```
+
+Player mode:
+
+```text
+Large controls
+Simple tasks
+Clear progress
+Low cognitive load
+Interactive field
+Visual feedback
+Short sessions
+```
+
+They should not share identical UX.
+
+---
+
+# 64. Accessibility
+
+Target:
+
+**WCAG 2.2 AA**
+
+Include:
+
+```text
+Keyboard navigation
+
+Screen-reader labels
+
+Closed captions
+
+Transcripts
+
+Reduced motion
+
+Scalable fonts
+
+Accessible contrast
+
+No color-only status indicators
+
+Focus states
+```
+
+---
+
+# 65. Phase 1 MVP
+
+The first RCISD-ready demonstrable version should contain:
+
+```text
+Organization setup
+
+Teams
+
+Coach accounts
+
+Player accounts
+
+Positions
+
+Playbook
+
+Formation editor
+
+Play editor
+
+Play DNA
+
+Play animation
+
+Player Academy
+
+Assignments
+
+Quiz engine
+
+Alignment challenge
+
+Assignment challenge
+
+Recall mode
+
+Mastery engine
+
+Coach dashboard
+
+Player progress
+
+Activity history
+
+Overdue tracking
+
+Coach feedback
+
+Notifications
+
+AI tutor
+
+Audit logging
+
+Security
+
+District branding
+```
+
+This is the minimum I would consider a credible pilot.
+
+---
+
+# 66. Phase 2
+
+```text
+Draw-it challenge
+
+Defensive recognition
+
+Adjustment drills
+
+Spaced review
+
+Misconception detection
+
+Coach intervention center
+
+Practice planner
+
+Practice recommendations
+
+Position-room dashboards
+
+Parent portal
+
+Offline mobile
+```
+
+---
+
+# 67. Phase 3
+
+```text
+Film upload
+
+Film clipping
+
+Film tagging
+
+Play-to-film linking
+
+Opponent database
+
+Scouting
+
+Tendency analytics
+
+Self-scout
+
+Game planning
+
+Call sheets
+```
+
+---
+
+# 68. Phase 4
+
+```text
+Computer vision
+
+AI film tagging
+
+Advanced Play DNA
+
+Knowledge graph
+
+Advanced recommendations
+
+Program Memory
+
+Cross-season analytics
+```
+
+---
+
+# 69. Phase 5
+
+```text
+Simulation engine
+
+Play marketplace
+
+District licensing
+
+League administration
+
+White label
+
+Enterprise SSO
+
+External APIs
+
+Hardware integrations
+```
+
+---
+
+# 70. Engineering Sprint 0
+
+Before UI work:
+
+```text
+Monorepo
+
+CI/CD
+
+Environments
+
+Auth
+
+Tenant model
+
+RBAC
+
+Database migrations
+
+Logging
+
+Error handling
+
+Secrets
+
+Storage
+
+Test framework
+
+Feature flags
+```
+
+Environments:
+
+```text
+local
+
+development
+
+staging
+
+production
+```
+
+---
+
+# 71. Sprint 1
+
+Build:
+
+```text
+Organizations
+
+Schools
+
+Teams
+
+Seasons
+
+Coaches
+
+Players
+
+Positions
+
+RBAC
+
+Coach dashboard shell
+```
+
+---
+
+# 72. Sprint 2
+
+Build:
+
+```text
+Playbooks
+
+Formations
+
+Players-on-field editor
+
+Routes
+
+Blocks
+
+Motion
+
+Assignment storage
+
+Play versioning
+```
+
+---
+
+# 73. Sprint 3
+
+Build:
+
+```text
+Player Academy
+
+Learn mode
+
+Position mode
+
+Animation
+
+Assignments
+
+Assignment completion
+```
+
+---
+
+# 74. Sprint 4
+
+Build:
+
+```text
+Quiz engine
+
+Alignment challenge
+
+Assignment challenge
+
+Recall mode
+
+Attempt tracking
+```
+
+---
+
+# 75. Sprint 5
+
+Build:
+
+```text
+Mastery engine
+
+Progress analytics
+
+Team readiness
+
+Player profile
+
+Position-group analytics
+
+Coach intervention queue
+```
+
+---
+
+# 76. Sprint 6
+
+Build:
+
+```text
+AI tutor
+
+Coach notes
+
+Corrections
+
+Notifications
+
+Review engine
+
+Spaced repetition
+```
+
+---
+
+# 77. Sprint 7
+
+Build:
+
+```text
+Security review
+
+Accessibility review
+
+Performance
+
+Mobile responsiveness
+
+District admin
+
+Pilot branding
+
+QA
+```
+
+---
+
+# 78. Pilot acceptance criteria
+
+Before Baley sees it, the system should demonstrate this exact journey.
+
+### Coach
+
+```text
+Create team
+
+Add player
+
+Create play
+
+Assign player position
+
+Add player assignment
+
+Publish play
+
+Create installation
+
+Assign installation
+
+Set deadline
+```
+
+### Player
+
+```text
+Login
+
+See assignment
+
+Study play
+
+Watch animation
+
+Complete alignment challenge
+
+Complete assignment challenge
+
+Complete quiz
+
+Complete recall
+
+Reach mastery
+```
+
+### Coach again
+
+Coach sees:
+
+```text
+Player opened assignment
+
+Exact attempts
+
+Correct / incorrect responses
+
+Time active
+
+Completion
+
+Mastery
+
+Missed concept
+
+Final readiness
+```
+
+If that whole loop works, we have a real product.
+
+---
+
+# 79. Required automated tests
+
+Unit:
+
+```text
+Mastery calculations
+
+Permissions
+
+Assignment completion
+
+Event processing
+
+Review scheduling
+
+Play validation
+```
+
+Integration:
+
+```text
+Auth → organization
+
+Coach → assignment
+
+Player → attempt
+
+Attempt → mastery
+
+Mastery → dashboard
+```
+
+E2E:
+
+```text
+Coach creates assignment
+
+Player completes
+
+Coach sees results
+```
+
+Security:
+
+```text
+Cross-tenant access
+
+Broken object authorization
+
+Privilege escalation
+
+Session attacks
+
+Injection
+
+File upload abuse
+```
+
+---
+
+# 80. Product analytics
+
+We need our own internal analytics without exposing student information improperly.
+
+Track aggregate SaaS health:
+
+```text
+Organizations activated
+
+Teams activated
+
+Coach adoption
+
+Assignments created
+
+Assignment completion
+
+Weekly active users
+
+Feature usage
+
+Retention
+```
+
+Separate platform analytics from educational records.
+
+---
+
+# 81. Pilot administrator dashboard
+
+For RCISD leadership:
+
+```text
+Pilot enrollment
+
+Active users
+
+Completion rate
+
+System uptime
+
+Support incidents
+
+Security events
+
+Aggregate mastery improvement
+
+Coach adoption
+
+Pilot milestones
+```
+
+Do not show private football strategy to district users unless explicitly authorized.
+
+---
+
+# 82. Data ownership model
+
+Contractually and technically:
+
+```text
+DISTRICT
+owns student-related institutional data
+
+TEAM
+controls proprietary football content
+
+GRIDIRONIQ
+owns platform software
+
+GRIDIRONIQ
+may use only properly deidentified aggregate operational metrics
+where contractually permitted
+```
+
+No cross-customer leakage.
+
+---
+
+# 83. Intellectual-property controls
+
+Playbooks need:
+
+```text
+Export controls
+
+Download permissions
+
+Dynamic watermarking
+
+User attribution
+
+Access revocation
+
+View logs
+
+Version history
+```
+
+Example watermark:
+
+```text
+OUiDA BALEY FOOTBALL
+AUTHORIZED USER: COACH SMITH
+2026-08-15 09:42
+```
+
+---
+
+# 84. Critical product principle
+
+Everything should revolve around this loop:
+
+```text
+COACH TEACHES
+        ↓
+PLAYER STUDIES
+        ↓
+SYSTEM TESTS
+        ↓
+SYSTEM MEASURES
+        ↓
+COACH SEES
+        ↓
+COACH CORRECTS
+        ↓
+PLAYER REVIEWS
+        ↓
+PLAYER RETAINS
+        ↓
+TEAM EXECUTES
+```
+
+That is the core of GridironIQ.
+
+---
+
+# 85. First demonstration environment
+
+Build a completely fictional:
+
+## Bulldog Demo Team
+
+Include:
+
+```text
+30 fictional players
+
+6 coaches
+
+Offense
+
+Defense
+
+8 formations
+
+20 plays
+
+4 defensive fronts
+
+6 coverages
+
+2 weekly installations
+
+Player mastery history
+
+Overdue assignments
+
+Coach interventions
+```
+
+This allows us to demonstrate a realistic functioning system without using any confidential RCISD football information.
+
+---
+
+# 86. Initial sales demonstration
+
+The coach demo should take approximately this journey:
+
+```text
+1. Dashboard
+
+2. Team readiness
+
+3. Click one struggling position group
+
+4. Click one player
+
+5. Show exactly what he missed
+
+6. Open the play
+
+7. Switch to Player Academy
+
+8. Complete interactive drill
+
+9. Show mastery improve
+
+10. Return to coach dashboard
+
+11. Show live updated result
+```
+
+That one sequence explains the entire value proposition.
+
+---
+
+# 87. The primary district pitch
+
+The message is not:
+
+> We built an AI playbook.
+
+It is:
+
+> **GridironIQ gives coaches measurable visibility into whether their athletes actually know what they have been taught.**
+
+Then demonstrate:
+
+```text
+Who studied
+
+Who did not
+
+What was completed
+
+What was missed
+
+What players misunderstood
+
+What requires review
+
+Who is ready
+
+Who needs help
+```
+
+That is a very strong institutional story.
+
+---
+
+# 88. Definition of done for Version 1
+
+I would not declare Version 1 finished until all of these work together:
+
+```text
+Coach creates football content
+
+Player receives it
+
+Player interacts with it
+
+Every meaningful action is captured
+
+Mastery is calculated
+
+Mistakes are categorized
+
+Coach can drill into every player
+
+Coach can identify incomplete work
+
+Coach can intervene
+
+Player receives correction
+
+Player demonstrates retention
+
+Administrators can audit access
+
+Team data stays isolated
+
+System works on mobile
+
+System meets accessibility requirements
+
+Platform survives automated security testing
+```
+
+If the tech team follows this architecture, **GridironIQ becomes more than a playbook application**. It becomes the operating system for teaching, measuring, retaining, and eventually analyzing an entire football program.
+
+The first technical milestone should be the **Coach → Assignment → Player Learning → Event Tracking → Mastery → Coach Dashboard loop**. Once that loop is rock solid, everything else, including film, scouting, game planning, AI recommendations, and program memory, has a reliable foundation to build on.

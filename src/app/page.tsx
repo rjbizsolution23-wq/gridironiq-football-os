@@ -73,6 +73,7 @@ const DepthChartIQ = dynamic(() => import('@/components/gridiron/depthchart-iq')
 const SelfScoutIQ = dynamic(() => import('@/components/gridiron/selfscout-iq'))
 const WeekPlanIQ = dynamic(() => import('@/components/gridiron/weekplan-iq'))
 const SettingsIQ = dynamic(() => import('@/components/gridiron/settings-iq'))
+const AccountabilityIQ = dynamic(() => import('@/components/gridiron/accountability-iq'))
 
 interface NavItem {
   id: ModuleId
@@ -108,6 +109,7 @@ const NAV: NavItem[] = [
   { id: 'twominute', label: 'TwoMinuteIQ', short: '2-Min Drill', icon: <Clock className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'drills', label: 'DrillBuilder', short: 'Drills', icon: <Dumbbell className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'settings', label: 'SettingsIQ', short: 'Settings', icon: <Settings className="size-4" />, group: 'operation' },
+  { id: 'accountability', label: 'AccountabilityIQ', short: 'Accountability', icon: <Users className="size-4" />, group: 'operation', badge: 'NEW' },
 ]
 
 const GROUP_LABELS: Record<NavItem['group'], string> = {
@@ -270,6 +272,8 @@ function ModuleRouter() {
       return <WeekPlanIQ />
     case 'settings':
       return <SettingsIQ />
+    case 'accountability':
+      return <AccountabilityIQ />
     default:
       return <Dashboard />
   }
@@ -401,7 +405,7 @@ export default function Home() {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
                 <Zap className="size-3 text-accent" />
-                <span className="text-accent">24 modules</span>
+                <span className="text-accent">25 modules</span>
                 <span className="opacity-30">·</span>
                 <span className="text-primary">LLM-powered</span>
               </div>

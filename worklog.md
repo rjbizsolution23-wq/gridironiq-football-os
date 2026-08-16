@@ -1712,3 +1712,60 @@ Task: Fix remaining 4 production gaps — TwoMinuteIQ defense mode, PDF export, 
 7. ✅ Real video upload + VLM (Cloudflare R2 + z-ai-web-dev-sdk VLM)
 8. ✅ Shareable deep links (URL hash sync)
 
+
+---
+Task ID: 17-accountability-layer
+Agent: main (Z.ai Code)
+Task: Add Player Accountability Center from the Master Product Handoff document
+
+## New Prisma Models:
+- **LearningEvent**: Event-sourced learning analytics (playerId, eventType, score, duration, correct, errorType, metadata). Supports all event types from the handoff: ASSIGNMENT_VIEWED, LESSON_COMPLETED, QUIZ_STARTED, QUESTION_ANSWERED, QUIZ_COMPLETED, ALIGNMENT_ATTEMPT, RECALL_ATTEMPT, etc.
+- **Assignment**: Coach-created assignment engine (title, targetType, positionGroup, playId, type, dueDate, priority, requiredScore, status). Supports assignment to team, position group, or individual.
+- **MasteryRecord**: Multidimensional mastery tracking per player per concept (formationRecognition, alignmentAccuracy, assignmentAccuracy, routeAccuracy, blockingRuleAccuracy, readAccuracy, adjustmentAccuracy, defensiveRecognition, recallAccuracy, overallMastery, confidence, attemptCount, lastReviewed). Implements the mastery engine from sections 13-14 of the handoff.
+
+## New Module: AccountabilityIQ™ (`src/components/gridiron/accountability-iq.tsx`, ~550 lines)
+The most important module from the handoff document — answers the coach's core questions:
+"Who studied? What did they study? What did they complete? What did they miss? What did they get wrong? What do they still not understand?"
+
+### Features:
+1. **Team Readiness Score** — computed index (X/100) based on players ready. Position group breakdown (QB, RB, WR, TE, OL, DL, LB, DB) with color-coded mastery percentages.
+
+2. **KPI Strip (5 tiles)**: Team Mastery %, Players Ready (X/N), Needs Review count, Not Ready count, Overdue Items count.
+
+3. **Coach Intervention Center** — auto-generated queue of "Players Needing Attention" sorted by overdue items first, then by lowest mastery. Each entry shows jersey, name, position, overdue count or mastery %, and status badge. Clicking opens the player's full profile.
+
+4. **Player Progress Grid** — table with columns: Player (jersey + name + position), Assigned, Completed, Overdue, Mastery (with visual progress bar), Last Active, Status (Ready/Review/Not Ready badge). Supports:
+   - Status filter tabs (All / Ready / Review / Not Ready)
+   - Search by name, position, or jersey
+   - Click any row to open the Individual Player Profile
+
+5. **Individual Player Intelligence Profile** (click any player) — full drill-down view:
+   - Player header: jersey circle, name, position badge, status badge, overall mastery %.
+   - Quick stats (6 tiles): Assigned, Completed, Overdue, Study Time, Streak (days), Last Active.
+   - **Multidimensional Mastery Breakdown** — 6 mastery dimensions with progress bars:
+     - Formation Recognition
+     - Alignment Accuracy
+     - Assignment Accuracy
+     - Defensive Recognition
+     - Adjustment Accuracy
+     - Recall Accuracy
+   - **Recent Activity Timeline** — event-sourced history with timestamps:
+     - "8:41 PM — Opened Counter GT lesson"
+     - "8:43 PM — Watched animation — 100% complete"
+     - "8:46 PM — Alignment challenge — Incorrect"
+     - "8:50 PM — Quiz attempt — Score: 70%"
+     - "8:54 PM — Recall attempt — Failed"
+     - "8:57 PM — Recall attempt — Passed"
+   - **Coach Actions** panel: Send Reminder, Assign Review, Add Note buttons.
+
+### Verified:
+- Initial render: "12 players · 3 ready · 8 need review · 1 not ready · 18 overdue items · 82m avg study time"
+- Team Readiness Score with position group breakdown rendered.
+- Intervention Center showed 6 players needing attention with overdue counts.
+- Player Progress Grid rendered all 12 players with mastery bars + status badges.
+- Clicked Marcus Bell → Individual Player Profile opened with 96% mastery, 6-dimension breakdown, activity timeline, and coach actions.
+
+## Wiring:
+- `lib/store.ts`: Added `accountability` to ModuleId. Total modules: 25.
+- `app/page.tsx`: Added dynamic import, nav item (Users icon, OPERATION group, badge: NEW), router case, footer updated to "25 modules".
+
