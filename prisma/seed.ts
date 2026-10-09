@@ -2115,6 +2115,7 @@ const teamData = {
   name: "Riverside Warriors",
   philosophy: "Spread / RPO-heavy",
   primaryColor: "#16a34a",
+  season: "2026",
 };
 
 // ============================================================================
@@ -2122,18 +2123,18 @@ const teamData = {
 // ============================================================================
 
 const players = [
-  { jersey: 9, name: "Marcus Bell", position: "QB", group: "offensive", height: "6'2", weight: 205, speedGrade: "A", notes: "Team captain, RPO triggerman, accurate on the move.", quizScore: 0.96 },
-  { jersey: 22, name: "Tyler Reed", position: "RB", group: "offensive", height: "5'10", weight: 195, speedGrade: "A+", notes: "Starter. Inside zone vision, explosive cutback ability.", quizScore: 0.91 },
-  { jersey: 5, name: "Drew Carter", position: "WR", group: "offensive", height: "6'1", weight: 185, speedGrade: "A", notes: "X receiver, vertical separator.", quizScore: 0.87 },
-  { jersey: 2, name: "Andre Bishop", position: "WR", group: "offensive", height: "5'11", weight: 180, speedGrade: "A+", notes: "Z receiver, jet sweep and bubble specialist.", quizScore: 0.82 },
-  { jersey: 8, name: "Sam Hall", position: "WR", group: "offensive", height: "5'10", weight: 175, speedGrade: "A", notes: "Slot H, mismatch vs apex.", quizScore: 0.79 },
-  { jersey: 88, name: "Jake Foster", position: "TE", group: "offensive", height: "6'4", weight: 245, speedGrade: "B+", notes: "Y tight end, run-blocker and seam threat.", quizScore: 0.84 },
+  { jersey: 9, name: "Marcus Bell", position: "QB", group: "offensive", height: "6'2", weight: 205, speedGrade: "A", notes: "Senior captain, RPO triggerman, accurate on the move. 2026 season MVP candidate.", quizScore: 0.96 },
+  { jersey: 22, name: "Tyler Reed", position: "RB", group: "offensive", height: "5'10", weight: 195, speedGrade: "A+", notes: "Junior starter. Inside zone vision, explosive cutback ability. 4.38 forty.", quizScore: 0.91 },
+  { jersey: 5, name: "Drew Carter", position: "WR", group: "offensive", height: "6'1", weight: 185, speedGrade: "A", notes: "Senior X receiver, vertical separator. Committed to Oregon.", quizScore: 0.87 },
+  { jersey: 2, name: "Andre Bishop", position: "WR", group: "offensive", height: "5'11", weight: 180, speedGrade: "A+", notes: "Junior Z receiver, jet sweep and bubble specialist. Track star.", quizScore: 0.82 },
+  { jersey: 8, name: "Sam Hall", position: "WR", group: "offensive", height: "5'10", weight: 175, speedGrade: "A", notes: "Sophomore slot H, mismatch vs apex. Emerging playmaker.", quizScore: 0.79 },
+  { jersey: 88, name: "Jake Foster", position: "TE", group: "offensive", height: "6'4", weight: 245, speedGrade: "B+", notes: "Senior Y tight end, run-blocker and seam threat. 2026 all-region candidate.", quizScore: 0.84 },
   { jersey: 71, name: "Pete Olson", position: "OL", group: "offensive", height: "6'4", weight: 285, speedGrade: "B", notes: "Left tackle, pass-set anchor.", quizScore: 0.78 },
   { jersey: 66, name: "Vince Diaz", position: "OL", group: "offensive", height: "6'2", weight: 280, speedGrade: "B+", notes: "Left guard, pull-and-kick specialist.", quizScore: 0.81 },
   { jersey: 53, name: "Dom Reyes", position: "OL", group: "offensive", height: "6'1", weight: 275, speedGrade: "B", notes: "Center, run-blocking signal caller.", quizScore: 0.93 },
   { jersey: 76, name: "Mike Bryant", position: "OL", group: "offensive", height: "6'3", weight: 290, speedGrade: "B", notes: "Right guard, double-team mauler.", quizScore: 0.75 },
   { jersey: 79, name: "Trey Walker", position: "OL", group: "offensive", height: "6'5", weight: 290, speedGrade: "B", notes: "Right tackle, edge setter in run game.", quizScore: 0.72 },
-  { jersey: 44, name: "Carlos Mendez", position: "LB", group: "defensive", height: "6'0", weight: 220, speedGrade: "A", notes: "Mike LB, defensive signal caller.", quizScore: 0.88 },
+  { jersey: 44, name: "Carlos Mendez", position: "LB", group: "defensive", height: "6'0", weight: 220, speedGrade: "A", notes: "Senior Mike LB, defensive signal caller. Leading tackler 2026.", quizScore: 0.88 },
 ];
 
 // ============================================================================
@@ -2242,7 +2243,7 @@ const games: Array<{
 }> = [
   {
     week: 1,
-    date: new Date("2024-09-06T19:00:00Z"),
+    date: new Date("2026-09-04T19:00:00Z"),
     location: "home",
     opponentIndex: 0,
     ourScore: 28,
@@ -2263,7 +2264,7 @@ const games: Array<{
   },
   {
     week: 2,
-    date: new Date("2024-09-13T19:00:00Z"),
+    date: new Date("2026-09-11T19:00:00Z"),
     location: "away",
     opponentIndex: 1,
     ourScore: 31,
@@ -2284,7 +2285,7 @@ const games: Array<{
   },
   {
     week: 3,
-    date: new Date("2024-09-20T19:00:00Z"),
+    date: new Date("2026-09-18T19:00:00Z"),
     location: "home",
     opponentIndex: 2,
     ourScore: 21,
@@ -2301,6 +2302,27 @@ const games: Array<{
       { quarter: 3, clock: "06:55", down: 2, distance: 7, hash: "middle", yardLine: 30, formation: "Gun Trips R", personnel: "11", concept: "smash", front: "3-4", coverage: "Cover 3", playType: "pass", playId: "OFF-PASS-0308", yardsGained: 16, success: true, explosive: false, negative: false },
       { quarter: 4, clock: "08:18", down: 1, distance: 10, hash: "right", yardLine: 38, formation: "Gun Trips R", personnel: "11", concept: "jet_sweep", front: "3-4", coverage: "Cover 3", playType: "run", playId: "OFF-RUN-0055", yardsGained: -3, success: false, explosive: false, negative: true },
       { quarter: 4, clock: "02:42", down: 2, distance: 13, hash: "left", yardLine: 35, formation: "Gun 2x2 Ace", personnel: "11", concept: "four_verticals", front: "3-4", coverage: "Cover 3", playType: "pass", playId: "OFF-PASS-0320", yardsGained: 17, success: true, explosive: false, negative: false },
+    ],
+  },
+  {
+    week: 4,
+    date: new Date("2026-10-02T19:00:00Z"),
+    location: "away",
+    opponentIndex: 0,
+    ourScore: 35,
+    oppScore: 14,
+    result: "W",
+    snapResults: [
+      { quarter: 1, clock: "11:22", down: 1, distance: 10, hash: "right", yardLine: 28, formation: "Gun Trips R", personnel: "11", concept: "iz_glance_rpo", front: "4-3", coverage: "Cover 3", playType: "pass", playId: "OFF-RPO-0172", yardsGained: 12, success: true, explosive: false, negative: false },
+      { quarter: 1, clock: "08:15", down: 1, distance: 10, hash: "middle", yardLine: 40, formation: "Gun Trips R", personnel: "11", concept: "inside_zone", front: "4-3", coverage: "Cover 3", playType: "run", playId: "OFF-RUN-0042", yardsGained: 7, success: true, explosive: false, negative: false },
+      { quarter: 1, clock: "04:33", down: 2, distance: 3, hash: "left", yardLine: 47, formation: "Gun 2x2 Ace", personnel: "11", concept: "gt_counter", front: "4-3", coverage: "Cover 3", playType: "run", playId: "OFF-RUN-0061", yardsGained: 18, success: true, explosive: true, negative: false },
+      { quarter: 2, clock: "12:48", down: 1, distance: 10, hash: "right", yardLine: 35, formation: "Gun Trips R", personnel: "11", concept: "mesh", front: "4-2-5", coverage: "Cover 3", playType: "pass", playId: "OFF-PASS-0310", yardsGained: 14, success: true, explosive: false, negative: false },
+      { quarter: 2, clock: "07:22", down: 2, distance: 6, hash: "middle", yardLine: 49, formation: "Gun Doubles", personnel: "10", concept: "stick", front: "4-2-5", coverage: "Quarters", playType: "pass", playId: "OFF-PASS-0305", yardsGained: 5, success: true, explosive: false, negative: false },
+      { quarter: 2, clock: "02:11", down: 1, distance: 10, hash: "left", yardLine: 20, formation: "Gun Trips R", personnel: "11", concept: "y_cross", front: "4-2-5", coverage: "Cover 3", playType: "pass", playId: "OFF-PASS-0340", yardsGained: 28, success: true, explosive: true, negative: false },
+      { quarter: 3, clock: "09:55", down: 1, distance: 10, hash: "right", yardLine: 25, formation: "Gun Trips R", personnel: "11", concept: "iz_glance_rpo", front: "4-3", coverage: "Cover 3", playType: "pass", playId: "OFF-RPO-0172", yardsGained: 6, success: true, explosive: false, negative: false },
+      { quarter: 3, clock: "05:18", down: 2, distance: 4, hash: "middle", yardLine: 45, formation: "Gun 2x2 Ace", personnel: "11", concept: "duo", front: "4-3", coverage: "Cover 3", playType: "run", playId: "OFF-RUN-0071", yardsGained: 9, success: true, explosive: false, negative: false },
+      { quarter: 4, clock: "10:33", down: 1, distance: 10, hash: "left", yardLine: 30, formation: "Gun Doubles", personnel: "10", concept: "flood", front: "4-3", coverage: "Cover 3", playType: "pass", playId: "OFF-PA-0203", yardsGained: 22, success: true, explosive: true, negative: false },
+      { quarter: 4, clock: "03:45", down: 2, distance: 8, hash: "right", yardLine: 42, formation: "Gun Trips R", personnel: "11", concept: "split_zone", front: "4-3", coverage: "Cover 3", playType: "run", playId: "OFF-RUN-0048", yardsGained: 4, success: true, explosive: false, negative: false },
     ],
   },
 ];

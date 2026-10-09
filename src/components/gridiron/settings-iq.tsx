@@ -271,7 +271,7 @@ function SettingsMain() {
     })
   }
 
-  const totalModules = 24
+  const totalModules = 25
 
   return (
     <div className="space-y-5">
@@ -492,7 +492,7 @@ function SettingsMain() {
                 <div className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
                   Version
                 </div>
-                <div className="text-base font-bold font-mono">1.7</div>
+                <div className="text-base font-bold font-mono">3.0</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
