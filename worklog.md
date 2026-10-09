@@ -1769,3 +1769,56 @@ The most important module from the handoff document — answers the coach's core
 - `lib/store.ts`: Added `accountability` to ModuleId. Total modules: 25.
 - `app/page.tsx`: Added dynamic import, nav item (Users icon, OPERATION group, badge: NEW), router case, footer updated to "25 modules".
 
+
+---
+Task ID: 18-contracting-ready
+Agent: main (Z.ai Code)
+Task: Add ContractIQ — District Proposal Generator for school district contracting
+
+## New Module: ContractIQ™ (`src/components/gridiron/contract-iq.tsx`, ~400 lines)
+
+The ContractIQ module generates professional contract proposals for school districts, making GridironIQ contracting-ready. It includes everything a coach or athletic director would need to present to their district for approval.
+
+### Features:
+
+1. **District Information Form** — District name, school name, contact name, email, phone, additional notes.
+
+2. **4 Pricing Tiers** (selectable cards):
+   - **Youth / 7-on-7** ($49-99/mo): PlaybookIQ (50 plays), PlayerQuiz, basic analytics, 1 team, mobile, email support
+   - **High School** ($199-499/mo, Most Popular): All 25 modules, 80 players, 4 AI engines, film upload, scouting, call sheets, 5 staff, priority support
+   - **Competitive HS** ($500-1,500/mo): Everything + unlimited players/staff, district-wide access, advanced analytics, PDF export, parent portal, dedicated account manager, custom packages, phone support
+   - **College / Institutional** (Custom): Everything + multi-program, API access, custom AI training, white-label, on-premise option, SLA 99.9%, 24/7 support, audit logging, custom dev
+
+3. **Implementation Timeline** (4-week plan):
+   - Week 1: Onboarding & Setup (district/school/team creation, staff provisioning, playbook import, roster import, philosophy config)
+   - Week 2: Installation & Training (coach training sessions, player onboarding, first install package, call sheet setup, film upload walkthrough)
+   - Week 3: First Game Week (opponent film upload, scout report, game plan, practice script, call sheet export, postgame analytics)
+   - Week 4: Full Operation (player accountability active, weekly cadence, analytics review, self-scout running, optimization)
+
+4. **Contract Terms** (10 items): Annual contract, Net 30 payment, setup fee waived, district owns data, configurable retention, COPPA+FERPA compliant, AES-256 security, 99.5% SLA, 30-day cancellation, training included.
+
+5. **Compliance Badges** (8 items): COPPA Compliant, FERPA Compliant, No Student Data Sold, Parent Access Workflows, Configurable Retention, Data Export Ready, Audit Logging, Tenant Isolation.
+
+6. **Generate Proposal Document** — Downloads a formatted text proposal with:
+   - Executive summary
+   - Selected tier + features
+   - Implementation timeline
+   - Contract terms
+   - All 25 modules listed
+   - 4 AI-powered intelligence engines
+   - Compliance & privacy section
+   - Security section
+   - Acceptance signatures (district representative + RJ Business Solutions)
+   - 30-day validity
+   - RJ Business Solutions branding
+
+### Verified:
+- Generated proposal for "Royse City ISD" (High School tier)
+- Downloaded as `GridironIQ-Proposal-Royse City ISD-2026-10-09.txt`
+- Proposal content verified: includes executive summary, tier details, implementation timeline, contract terms, compliance, security, and signature blocks
+
+## Wiring:
+- `lib/store.ts`: Added `contract` to ModuleId. Total modules: 26.
+- `app/page.tsx`: Added dynamic import, nav item (FileText icon, OPERATION group, badge: NEW), router case, footer updated to "26 modules".
+- `settings-iq.tsx`: Updated totalModules to 26.
+

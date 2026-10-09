@@ -32,6 +32,7 @@ export type ModuleId =
   | 'weekplan'
   | 'settings'
   | 'accountability'
+  | 'contract'
 
 export interface UINotice {
   id: string

@@ -271,7 +271,7 @@ function SettingsMain() {
     })
   }
 
-  const totalModules = 25
+  const totalModules = 26
 
   return (
     <div className="space-y-5">
