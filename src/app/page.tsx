@@ -76,6 +76,9 @@ const WeekPlanIQ = dynamic(() => import('@/components/gridiron/weekplan-iq'))
 const SettingsIQ = dynamic(() => import('@/components/gridiron/settings-iq'))
 const AccountabilityIQ = dynamic(() => import('@/components/gridiron/accountability-iq'))
 const ContractIQ = dynamic(() => import('@/components/gridiron/contract-iq'))
+const AuditLogIQ = dynamic(() => import('@/components/gridiron/auditlog-iq'))
+const ParentPortal = dynamic(() => import('@/components/gridiron/parent-portal'))
+const OnboardingIQ = dynamic(() => import('@/components/gridiron/onboarding-iq'))
 
 interface NavItem {
   id: ModuleId
@@ -113,6 +116,9 @@ const NAV: NavItem[] = [
   { id: 'settings', label: 'SettingsIQ', short: 'Settings', icon: <Settings className="size-4" />, group: 'operation' },
   { id: 'accountability', label: 'AccountabilityIQ', short: 'Accountability', icon: <Users className="size-4" />, group: 'operation', badge: 'NEW' },
   { id: 'contract', label: 'ContractIQ', short: 'Contract', icon: <FileText className="size-4" />, group: 'operation', badge: 'NEW' },
+  { id: 'auditlog', label: 'AuditLogIQ', short: 'Audit Log', icon: <Shield className="size-4" />, group: 'operation', badge: 'NEW' },
+  { id: 'parent', label: 'Parent Portal', short: 'Parent', icon: <Users className="size-4" />, group: 'operation', badge: 'NEW' },
+  { id: 'onboarding', label: 'OnboardingIQ', short: 'Onboarding', icon: <GraduationCap className="size-4" />, group: 'operation', badge: 'NEW' },
 ]
 
 const GROUP_LABELS: Record<NavItem['group'], string> = {
@@ -279,6 +285,12 @@ function ModuleRouter() {
       return <AccountabilityIQ />
     case 'contract':
       return <ContractIQ />
+    case 'auditlog':
+      return <AuditLogIQ />
+    case 'parent':
+      return <ParentPortal />
+    case 'onboarding':
+      return <OnboardingIQ />
     default:
       return <Dashboard />
   }
@@ -410,7 +422,7 @@ export default function Home() {
               <Separator orientation="vertical" className="h-6 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono">
                 <Zap className="size-3 text-accent" />
-                <span className="text-accent">26 modules</span>
+                <span className="text-accent">29 modules</span>
                 <span className="opacity-30">·</span>
                 <span className="text-primary">LLM-powered</span>
               </div>

@@ -10,6 +10,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ---------- Multi-Tenant Hierarchy ----------
+
+model District {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "Royse City ISD"
+  state       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  schools     School[]
+  users       User[]
+  auditEvents AuditEvent[]
+}
+
+model School {
+  id          String   @id @default(cuid())
+  districtId  String
+  district    District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  name        String   // e.g. "Royse City High School"
+  level       String?  // middle, freshman, jv, varsity
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  programs    Program[]
+}
+
+model Program {
+  id          String   @id @default(cuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name        String   // e.g. "Football"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teams       Team[]
+}
+
 // ---------- Organizations & Team Memory ----------
 
 model User {
@@ -17,15 +54,25 @@ model User {
   email         String    @unique
   name          String
   passwordHash  String
-  role          String    @default("coach") // coach | analyst | player | head_coach | admin
+  role          String    @default("coach") // super_admin, district_admin, school_admin, athletic_director, head_coach, offensive_coordinator, defensive_coordinator, special_teams_coordinator, position_coach, analyst, player, parent_guardian, read_only
+  districtId    String?
+  district      District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
   teamId        String?
   team          Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  // Policy-based permissions (JSON array of permission strings)
+  permissions  String?   // e.g. '["can_view_player_progress","can_assign_content","can_edit_playbook"]'
+  grade        String?   // for players: "9th","10th","11th","12th"
+  dateOfBirth  DateTime? // for COPPA age verification
+  parentEmail  String?   // for parent_guardian consent workflows
+  consentGiven Boolean  @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
 model Team {
   id          String   @id @default(cuid())
+  programId   String?
+  program     Program? @relation(fields: [programId], references: [id], onDelete: SetNull)
   name        String
   philosophy  String   // Spread, Air Raid, West Coast, etc.
   primaryColor String?
@@ -45,6 +92,7 @@ model Team {
   learningEvents LearningEvent[]
   assignments Assignment[]
   masteryRecords MasteryRecord[]
+  reviewItems   ReviewItem[]
 }
 
 model Player {
@@ -63,6 +111,7 @@ model Player {
   createdAt DateTime @default(now())
   learningEvents LearningEvent[]
   masteryRecords MasteryRecord[]
+  reviewItems   ReviewItem[]
 }
 
 // ---------- PlaybookIQ — Play DNA ----------
@@ -341,4 +390,39 @@ model MasteryRecord {
   lastReviewed          DateTime?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// ---------- Audit Logging ----------
+
+model AuditEvent {
+  id            String   @id @default(cuid())
+  districtId    String?
+  district      District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  userId        String?
+  userEmail     String?
+  action        String   // LOGIN, LOGOUT, LOGIN_FAILED, ROLE_CHANGE, PLAYBOOK_EXPORT, PLAYER_ADDED, PLAYER_REMOVED, COACH_ADDED, DATA_EXPORT, DATA_DELETE, SETTINGS_CHANGE
+  resourceType  String?  // user, play, player, opponent, call_sheet, film_clip, drill
+  resourceId    String?
+  metadata      String?  // JSON
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+}
+
+// ---------- Review Queue (Spaced Retrieval) ----------
+
+model ReviewItem {
+  id            String   @id @default(cuid())
+  teamId        String?
+  team          Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId      String
+  player        Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  concept       String   // inside_zone, mesh, cover_3, etc.
+  playId        String?
+  nextReview    DateTime
+  lastReviewed  DateTime?
+  interval      Int      @default(1) // days: 1, 3, 7, 14, 30
+  priority      Int      @default(5) // 1-10
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

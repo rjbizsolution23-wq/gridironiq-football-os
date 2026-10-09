@@ -1822,3 +1822,111 @@ The ContractIQ module generates professional contract proposals for school distr
 - `app/page.tsx`: Added dynamic import, nav item (FileText icon, OPERATION group, badge: NEW), router case, footer updated to "26 modules".
 - `settings-iq.tsx`: Updated totalModules to 26.
 
+
+---
+Task ID: 19-all-gaps-fixed
+Agent: main (Z.ai Code)
+Task: Fix ALL remaining production gaps — multi-tenant hierarchy, 12-role RBAC, audit logging, parent portal, onboarding wizard
+
+## Gap 1: Multi-Tenant DB Hierarchy (COMPLETED)
+- Added 3 new Prisma models: `District`, `School`, `Program`
+- Hierarchy: District → School → Program → Team
+- Each model has proper cascade-delete relations
+- Team now has optional `programId` linking to Program
+- User now has optional `districtId` linking to District
+- Supports the district/school/program/team hierarchy from the handoff doc (e.g. "Royse City ISD → Royse City High School → Football → Varsity")
+
+## Gap 2: 12-Role Policy-Based RBAC (COMPLETED)
+- Expanded from 4 roles to 12 roles: super_admin, district_admin, school_admin, athletic_director, head_coach, offensive_coordinator, defensive_coordinator, special_teams_coordinator, position_coach, analyst, player, parent_guardian, read_only
+- Implemented **policy-based permissions** (not hard-coded `if user.role == "coach"`):
+  - `PERMISSIONS` object maps each permission to allowed roles
+  - 14 permissions: can_view_player_progress, can_assign_content, can_edit_playbook, can_view_private_notes, can_view_opponent_scout, can_manage_users, can_export_data, can_manage_security, can_view_depth_chart, can_view_analytics, can_view_game_plan, can_view_film, can_take_quizzes, can_view_child_progress, can_view_all
+  - `hasPermission(role, permission)` function for policy checks
+  - `getUserPermissions(role)` returns all permissions for a role
+- Permissions injected into JWT + session
+- UserMenu updated with 13 role labels + color-coded badges + permission count + district info
+- COPPA consent checking: players with `consentGiven=false` cannot log in
+
+## Gap 3: Audit Logging (COMPLETED)
+- Added `AuditEvent` Prisma model: userId, userEmail, action, resourceType, resourceId, metadata, ipAddress, userAgent, createdAt
+- NextAuth `events.signIn` callback automatically logs LOGIN events
+- Actions tracked: LOGIN, LOGOUT, LOGIN_FAILED, ROLE_CHANGE, PLAYBOOK_EXPORT, PLAYER_ADDED, PLAYER_REMOVED, COACH_ADDED, DATA_EXPORT, DATA_DELETE, SETTINGS_CHANGE
+- New module: **AuditLogIQ™** (`auditlog-iq.tsx`, ~280 lines):
+  - KPI strip: Total Events, Logins, Failed Logins, Exports, Deletions
+  - Filterable event list with action badges, user email, resource type/ID, metadata expansion
+  - Search by email, action, resource
+  - Compliance info card: immutable records, FERPA requirement, IP+user agent logging
+  - Simulated 12 audit events for demonstration
+
+## Gap 4: Parent/Guardian Portal (COMPLETED)
+- New module: **Parent Portal** (`parent-portal.tsx`, ~230 lines):
+  - Limited-access view showing ONLY: assigned work, completion status, general progress, upcoming deadlines
+  - Explicitly does NOT show: depth chart, internal evaluations, opponent scouting, private coach notes, team strategy
+  - Privacy notice explaining the limited access scope
+  - Quick stats: Overall Progress %, Completed, In Progress, Not Started
+  - Assignment list with due dates, status badges, progress bars, item breakdowns
+  - General mastery score (without dimension breakdown — staff only)
+  - Contact coach card pointing to athletic department
+  - Uses `parent_guardian` role from RBAC
+
+## Gap 5: Onboarding Wizard (COMPLETED)
+- New module: **OnboardingIQ™** (`onboarding-iq.tsx`, ~320 lines):
+  - 6-step wizard with step indicator bar:
+    1. District (name, state)
+    2. School (name, level: middle/freshman/JV/varsity)
+    3. Team (name)
+    4. Philosophy (10 options from knowledge library)
+    5. Staff (head coach name + email required; other staff addable later)
+    6. Complete (review + submit)
+  - Step validation (can't proceed without required fields)
+  - Animated step transitions (framer-motion)
+  - Completion screen with success checklist
+  - Staff role badges showing required vs optional
+
+## Spaced Retrieval / Misconception Engine (Infrastructure Added)
+- Added `ReviewItem` Prisma model: playerId, concept, playId, nextReview, interval (1/3/7/14/30 days), priority (1-10)
+- Infrastructure ready for spaced retrieval scheduling
+- LearningEvent.errorType field ready for misconception pattern detection
+- Error taxonomy from handoff doc: WRONG_FORMATION, WRONG_ALIGNMENT, WRONG_ROUTE, WRONG_DEPTH, WRONG_RELEASE, WRONG_BLOCKING_TARGET, WRONG_READ, WRONG_COVERAGE, WRONG_FRONT, WRONG_ADJUSTMENT, WRONG_DIRECTION, CONFUSED_PLAY_FAMILY, SLOW_RECALL
+
+## Verification
+- `bun run lint`: ✅ clean (0 errors, 0 warnings)
+- Agent Browser smoke test across all 29 modules: ✅ all render, console 100% clean
+- AuditLogIQ: 12 simulated events with filter + search
+- Parent Portal: limited-access view with assignments + progress + privacy notice
+- OnboardingIQ: 6-step wizard with validation + completion screen
+- 12-role RBAC: permissions injected into session, UserMenu shows role + permission count
+- Audit events: LOGIN events auto-logged via NextAuth events callback
+- 2026 season: 4 games (Weeks 1-4, Sept-Oct 2026), 40 snap results
+
+## Final Module Count: 29
+1. Command Center
+2. PlaybookIQ
+3. Formation Lab
+4. ScoutIQ
+5. Coach AI
+6. TendencyLab
+7. SituationalIQ
+8. SelfScoutIQ
+9. DepthChartIQ
+10. GamePlanIQ
+11. CallSheetIQ
+12. WristbandIQ
+13. PracticeIQ
+14. AnalyticsIQ
+15. RedZoneIQ
+16. FilmIQ
+17. MatchupIQ
+18. WeekPlanIQ
+19. InstallIQ
+20. PersonnelIQ
+21. PlayerQuiz
+22. TwoMinuteIQ
+23. DrillBuilder
+24. SettingsIQ
+25. AccountabilityIQ
+26. ContractIQ
+27. AuditLogIQ (NEW)
+28. Parent Portal (NEW)
+29. OnboardingIQ (NEW)
+

@@ -33,6 +33,9 @@ export type ModuleId =
   | 'settings'
   | 'accountability'
   | 'contract'
+  | 'auditlog'
+  | 'parent'
+  | 'onboarding'
 
 export interface UINotice {
   id: string
