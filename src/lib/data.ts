@@ -6,7 +6,7 @@
 
 import { db } from '@/lib/db'
 
-function parse<T = unknown>(value: string | null | undefined): T | null {
+export function parse<T = unknown>(value: string | null | undefined): T | null {
   if (!value) return null
   try {
     return JSON.parse(value) as T
