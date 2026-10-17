@@ -42,7 +42,7 @@ export const PERMISSIONS = {
 export type Permission = keyof typeof PERMISSIONS
 
 export function hasPermission(role: string, permission: Permission): boolean {
-  const allowedRoles = PERMISSIONS[permission]
+  const allowedRoles = PERMISSIONS[permission] as readonly string[]
   return allowedRoles.includes(role)
 }
 
@@ -107,12 +107,20 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role: string }).role
-        token.teamId = (user as { teamId: string | null }).teamId
-        token.teamName = (user as { teamName: string | null }).teamName
-        token.districtId = (user as { districtId: string | null }).districtId
-        token.districtName = (user as { districtName: string | null }).districtName
-        token.permissions = (user as { permissions: string[] }).permissions
+        const customUser = user as unknown as {
+          role: string
+          teamId: string | null
+          teamName: string | null
+          districtId: string | null
+          districtName: string | null
+          permissions: string[]
+        }
+        token.role = customUser.role
+        token.teamId = customUser.teamId
+        token.teamName = customUser.teamName
+        token.districtId = customUser.districtId
+        token.districtName = customUser.districtName
+        token.permissions = customUser.permissions
       }
       return token
     },

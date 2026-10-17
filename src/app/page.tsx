@@ -47,6 +47,8 @@ import {
   useCommandPaletteShortcut,
 } from '@/components/gridiron/command-palette'
 import { UserMenu } from '@/components/auth/user-menu'
+import { InteractiveTour } from '@/components/gridiron/interactive-tour'
+import { Compass } from 'lucide-react'
 
 // Lazy-load modules so each module's React Query provider doesn't initialize
 // until the user opens it. Keeps initial bundle smaller + avoids hydration mismatches.
@@ -313,7 +315,13 @@ function AnimatedModuleRouter() {
   )
 }
 
-function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
+function TopBar({
+  onOpenPalette,
+  onOpenTour,
+}: {
+  onOpenPalette: () => void
+  onOpenTour: () => void
+}) {
   const activeModule = useAppStore((s) => s.activeModule)
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
   const setSidebarOpen = useAppStore((s) => s.setSidebarOpen)
@@ -352,6 +360,18 @@ function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
 
         {/* Right side */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Guided tour button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10 shadow-sm"
+            onClick={onOpenTour}
+            title="Start Interactive Tour"
+          >
+            <Compass className="size-3.5" />
+            <span className="hidden sm:inline">Guided Tour</span>
+          </Button>
+
           {/* Command palette trigger */}
           <button
             onClick={onOpenPalette}
@@ -388,6 +408,7 @@ function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
 
 export default function Home() {
   const [paletteOpen, setPaletteOpen] = React.useState(false)
+  const [tourOpen, setTourOpen] = React.useState(false)
   useCommandPaletteShortcut(() => setPaletteOpen((o) => !o))
 
   return (
@@ -399,10 +420,15 @@ export default function Home() {
 
       {/* Main column */}
       <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
-        <TopBar onOpenPalette={() => setPaletteOpen(true)} />
+        <TopBar
+          onOpenPalette={() => setPaletteOpen(true)}
+          onOpenTour={() => setTourOpen(true)}
+        />
         <main className="flex-1 px-3 md:px-6 py-4 md:py-6">
           <AnimatedModuleRouter />
         </main>
+
+        <InteractiveTour open={tourOpen} onOpenChange={setTourOpen} />
 
         {/* Sticky footer */}
         <footer className="mt-auto border-t border-border bg-card/40 backdrop-blur-sm">

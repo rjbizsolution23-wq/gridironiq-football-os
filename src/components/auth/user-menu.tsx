@@ -54,7 +54,14 @@ export function UserMenu() {
 
   if (!session?.user) return null
 
-  const user = session.user as { name?: string; email?: string; role?: string; teamName?: string | null }
+  const user = session.user as {
+    name?: string
+    email?: string
+    role?: string
+    teamName?: string | null
+    districtName?: string | null
+    permissions?: string[]
+  }
   const initials = (user.name ?? '?')
     .split(' ')
     .map((n) => n[0])

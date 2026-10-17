@@ -556,7 +556,7 @@ function TwoMinuteMain() {
       }
 
       const newClock = Math.max(0, prev.gameClockSeconds - clockDelta)
-      let newStatus = prev.status
+      let newStatus: GameState['status'] = prev.status
       let newResult = prev.result
 
       if (touchdown) {
@@ -705,7 +705,7 @@ function TwoMinuteMain() {
         timestamp: Date.now(),
       }
       const newClock = Math.max(0, prev.gameClockSeconds - 4)
-      let newStatus = prev.status
+      let newStatus: GameState['status'] = prev.status
       let newResult = prev.result
       if (newClock <= 0) {
         newStatus = 'game-over'
@@ -728,7 +728,7 @@ function TwoMinuteMain() {
     setState((prev) => {
       if (prev.status === 'game-over') return prev
       const newClock = Math.max(0, prev.gameClockSeconds - 10)
-      let newStatus = prev.status
+      let newStatus: GameState['status'] = prev.status
       let newResult = prev.result
       if (newClock <= 0) {
         newStatus = 'game-over'

@@ -194,7 +194,7 @@ function DraggablePlayer({
   const isOff = side === 'offense'
   return (
     <g
-      ref={setNodeRef}
+      ref={(el) => setNodeRef(el as unknown as HTMLElement | null)}
       transform={`translate(${gx(player.x + dragX)} ${gy(player.y + dragY)})`}
       style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
       {...listeners}

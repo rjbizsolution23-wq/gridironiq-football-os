@@ -271,58 +271,53 @@ function CommandPaletteInner({ open, onOpenChange }: CommandPaletteProps) {
   // Recent items (only when query is empty)
   const recentItems: PaletteItem[] = React.useMemo(() => {
     if (query.trim() || recent.length === 0) return []
-    return recent
-      .map((rid) => {
-        // Resolve recent ID to a palette item, overriding group to 'Recent'
-        if (rid.startsWith('nav-')) {
-          const found = navItems.find((n) => n.id === rid)
-          if (found) return { ...found, group: 'Recent' as const }
+    const items: PaletteItem[] = []
+    for (const rid of recent) {
+      if (rid.startsWith('nav-')) {
+        const found = navItems.find((n) => n.id === rid)
+        if (found) items.push({ ...found, group: 'Recent' })
+      } else if (rid.startsWith('action-')) {
+        const found = actionItems.find((a) => a.id === rid)
+        if (found) items.push({ ...found, group: 'Recent' })
+      } else if (rid.startsWith('play-')) {
+        const playId = rid.replace('play-', '')
+        const play = data?.plays.find((p) => p.id === playId)
+        if (play) {
+          items.push({
+            id: rid,
+            label: play.name,
+            description: `${play.playId} · ${play.concept.replace(/_/g, ' ')}`,
+            icon: <PlayCircle className="size-4" />,
+            group: 'Recent',
+            typeLabel: 'Play',
+            keywords: '',
+            action: () => {
+              setSelectedPlayId(play.id)
+              setActiveModule('playbook')
+            },
+          })
         }
-        if (rid.startsWith('action-')) {
-          const found = actionItems.find((a) => a.id === rid)
-          if (found) return { ...found, group: 'Recent' as const }
+      } else if (rid.startsWith('opp-')) {
+        const oppId = rid.replace('opp-', '')
+        const opp = data?.opponents.find((o) => o.id === oppId)
+        if (opp) {
+          items.push({
+            id: rid,
+            label: opp.name,
+            description: `${opp.mascot ?? ''} · ${opp.league ?? ''}`.trim(),
+            icon: <Shield className="size-4" />,
+            group: 'Recent',
+            typeLabel: 'Opponent',
+            keywords: '',
+            action: () => {
+              setSelectedOpponentId(opp.id)
+              setActiveModule('scout')
+            },
+          })
         }
-        if (rid.startsWith('play-')) {
-          const playId = rid.replace('play-', '')
-          const play = data?.plays.find((p) => p.id === playId)
-          if (play) {
-            return {
-              id: rid,
-              label: play.name,
-              description: `${play.playId} · ${play.concept.replace(/_/g, ' ')}`,
-              icon: <PlayCircle className="size-4" />,
-              group: 'Recent' as const,
-              typeLabel: 'Play',
-              keywords: '',
-              action: () => {
-                setSelectedPlayId(play.id)
-                setActiveModule('playbook')
-              },
-            }
-          }
-        }
-        if (rid.startsWith('opp-')) {
-          const oppId = rid.replace('opp-', '')
-          const opp = data?.opponents.find((o) => o.id === oppId)
-          if (opp) {
-            return {
-              id: rid,
-              label: opp.name,
-              description: `${opp.mascot ?? ''} · ${opp.league ?? ''}`.trim(),
-              icon: <Shield className="size-4" />,
-              group: 'Recent' as const,
-              typeLabel: 'Opponent',
-              keywords: '',
-              action: () => {
-                setSelectedOpponentId(opp.id)
-                setActiveModule('scout')
-              },
-            }
-          }
-        }
-        return undefined
-      })
-      .filter((x): x is PaletteItem => x != null)
+      }
+    }
+    return items
   }, [query, recent, navItems, actionItems, data, setActiveModule, setSelectedPlayId, setSelectedOpponentId])
 
   // Build the full filtered list (for keyboard navigation)

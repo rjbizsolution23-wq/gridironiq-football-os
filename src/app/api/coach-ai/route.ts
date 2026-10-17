@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 import {
   getAllPlays,
   getOpponents,
@@ -8,6 +7,7 @@ import {
   getTeam,
 } from '@/lib/data'
 import { PHILOSOPHIES, OFFENSIVE_CONCEPTS, DEFENSIVE_FRONTS, COVERAGES } from '@/lib/football/knowledge'
+import { createChatCompletion, ChatMessage } from '@/lib/ai-client'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -39,9 +39,10 @@ You are anchored to the team's actual playbook and opponent data, which will be 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}))
-    const { message, history = [] } = body as {
+    const { message, history = [], model } = body as {
       message: string
       history?: Array<{ role: 'user' | 'assistant'; content: string }>
+      model?: string
     }
 
     if (!message || typeof message !== 'string') {
@@ -90,32 +91,28 @@ export async function POST(req: NextRequest) {
         .join(', ')}.`,
     ].join('\n')
 
-    const zai = await ZAI.create()
-
-    const messages: Array<{ role: 'assistant' | 'user'; content: string }> = [
-      { role: 'assistant', content: SYSTEM_PROMPT },
+    const messages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
       {
         role: 'user',
         content:
           'Here is live context from GridironIQ™. Use it as ground truth for your answers.\n\n' +
           contextBlock,
       },
-      ...history.slice(-6),
+      ...history.slice(-6).map((h) => ({ role: h.role, content: h.content })),
       { role: 'user', content: message },
     ]
 
-    const completion = await zai.chat.completions.create({
+    const responseText = await createChatCompletion({
       messages,
-      thinking: { type: 'disabled' },
+      model: model || 'openrouter/free',
+      temperature: 0.3,
     })
-
-    const responseText =
-      completion.choices[0]?.message?.content ??
-      'Coach AI was unable to generate a response. Please rephrase your question.'
 
     return new Response(
       JSON.stringify({
         response: responseText,
+        modelUsed: model || 'openrouter/free',
         context: {
           team: team?.name ?? null,
           playsAvailable: plays.length,

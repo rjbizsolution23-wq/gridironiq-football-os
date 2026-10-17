@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 import { getAllPlays, getOpponents, getConceptPerformance, getTeam } from '@/lib/data'
+import { createChatCompletion, ChatMessage } from '@/lib/ai-client'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -19,6 +19,7 @@ interface GamePlanRequest {
   }
   personnelNotes?: string
   coachingGoal?: string
+  model?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -138,20 +139,20 @@ ${baseContext}
 
 The playId MUST come from INSTALLED PLAY CATALOG above. Pick real installed plays.`
 
-    const zai = await ZAI.create()
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'assistant',
-          content:
-            'You are GamePlanIQ™, the AI game-planning engine inside GridironIQ™. You output STRICT JSON only — no markdown fences, no commentary.',
-        },
-        { role: 'user', content: prompt },
-      ],
-      thinking: { type: 'disabled' },
-    })
+    const messages: ChatMessage[] = [
+      {
+        role: 'system',
+        content:
+          'You are GamePlanIQ™, the AI game-planning engine inside GridironIQ™. You output STRICT JSON only — no markdown fences, no commentary.',
+      },
+      { role: 'user', content: prompt },
+    ]
 
-    const raw = completion.choices[0]?.message?.content ?? ''
+    const raw = await createChatCompletion({
+      messages,
+      model: body.model || 'openrouter/free',
+      temperature: 0.2,
+    })
 
     // Strip code fences if the model added them
     const cleaned = raw
@@ -176,6 +177,7 @@ The playId MUST come from INSTALLED PLAY CATALOG above. Pick real installed play
       JSON.stringify({
         result: parsed,
         opponent: opponent?.name ?? null,
+        modelUsed: body.model || 'openrouter/free',
         generatedAt: new Date().toISOString(),
       }),
       { status: 200, headers: { 'content-type': 'application/json' } }

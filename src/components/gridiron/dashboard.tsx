@@ -259,7 +259,16 @@ function DashboardMain() {
   })
 
   const team = data?.team
-  const summary = data?.gameSummary
+  const summary = data?.gameSummary ?? {
+    totalPlays: 0,
+    successRate: 0,
+    yardsPerPlay: 0,
+    explosives: 0,
+    negatives: 0,
+    passRunRatio: { pass: 0, run: 0 },
+    bestConcept: null,
+    worstConcept: null,
+  }
 
   const offensePlays = data?.plays.filter((p) => p.side === 'offense') ?? []
   const defensePlays = data?.plays.filter((p) => p.side === 'defense') ?? []

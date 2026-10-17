@@ -32,10 +32,17 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
-import { Bot, Trash2 } from 'lucide-react'
+import { Bot, Sparkles, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 import {
@@ -83,12 +90,19 @@ export default function CoachAI() {
 interface ApiResponseBody {
   response?: string
   error?: string
+  modelUsed?: string
   context?: {
     team?: string | null
     playsAvailable?: number
     opponents?: string[]
   }
   createdAt?: string
+}
+
+interface FreeModelItem {
+  id: string
+  name: string
+  contextLength?: number
 }
 
 // ----------------------------------------------------------------------------
@@ -99,9 +113,34 @@ function CoachAIInner() {
   const [messages, setMessages] = useState<ChatMessageShape[]>([])
   const [isPending, setIsPending] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [availableModels, setAvailableModels] = useState<FreeModelItem[]>([
+    { id: 'openrouter/free', name: 'Auto Free Router (Best Available)' },
+  ])
+  const [selectedModel, setSelectedModel] = useState<string>('openrouter/free')
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const lastUserTextRef = useRef<string>('') // powers Retry
+
+  // Fetch verified free models from /api/models on mount
+  useEffect(() => {
+    let active = true
+    async function loadModels() {
+      try {
+        const res = await fetch('/api/models')
+        if (!res.ok) return
+        const data = await res.json()
+        if (active && Array.isArray(data.models) && data.models.length > 0) {
+          setAvailableModels(data.models)
+        }
+      } catch {
+        // Fallback to default free router
+      }
+    }
+    void loadModels()
+    return () => {
+      active = false
+    }
+  }, [])
 
   // --------------------------------------------------------------------------
   //  Load history from localStorage on mount (client-only — avoids hydration
@@ -178,7 +217,7 @@ function CoachAIInner() {
         const r = await fetch('/api/coach-ai', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ message: trimmed, history }),
+          body: JSON.stringify({ message: trimmed, history, model: selectedModel }),
         })
 
         const data = (await r.json().catch(() => ({}))) as ApiResponseBody
@@ -195,6 +234,7 @@ function CoachAIInner() {
             content: replyText,
             ts: Date.now(),
             error: isError,
+            modelUsed: data.modelUsed,
           },
         ])
       } catch {
@@ -213,7 +253,7 @@ function CoachAIInner() {
         setIsPending(false)
       }
     },
-    [isPending, messages],
+    [isPending, messages, selectedModel],
   )
 
   // --------------------------------------------------------------------------
@@ -279,7 +319,28 @@ function CoachAIInner() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Free model picker */}
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-primary shrink-0 hidden sm:inline-block" />
+              <Select
+                value={selectedModel}
+                onValueChange={(val) => setSelectedModel(val)}
+                disabled={isPending}
+              >
+                <SelectTrigger className="h-8 max-w-[220px] text-xs font-mono bg-background border-border">
+                  <SelectValue placeholder="Select free model" />
+                </SelectTrigger>
+                <SelectContent align="end" className="max-h-[300px]">
+                  {availableModels.map((m) => (
+                    <SelectItem key={m.id} value={m.id} className="text-xs">
+                      {m.name || m.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="size-2 animate-pulse-soft rounded-full bg-primary" />
               Online

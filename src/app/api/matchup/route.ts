@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 import {
   getAllPlays,
   getOpponents,
@@ -8,6 +7,7 @@ import {
   getTeam,
   getGames,
 } from '@/lib/data'
+import { createChatCompletion, ChatMessage } from '@/lib/ai-client'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
       location?: 'home' | 'away' | 'neutral'
       weather?: string
       injuries?: string
+      model?: string
     }
 
     const [plays, opponents, perf, summary, team, games] = await Promise.all([
@@ -121,19 +122,20 @@ export async function POST(req: NextRequest) {
         .join('\n')}`,
     ].join('\n\n')
 
-    const zai = await ZAI.create()
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: 'assistant', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Predict the matchup. Return STRICT JSON only.\n\n${contextBlock}`,
-        },
-      ],
-      thinking: { type: 'disabled' },
+    const messages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: `Predict the matchup. Return STRICT JSON only.\n\n${contextBlock}`,
+      },
+    ]
+
+    const raw = await createChatCompletion({
+      messages,
+      model: body.model || 'openrouter/free',
+      temperature: 0.2,
     })
 
-    const raw = completion.choices[0]?.message?.content ?? ''
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```\s*$/i, '')
@@ -157,6 +159,7 @@ export async function POST(req: NextRequest) {
         prediction: parsed,
         opponent: { id: opponent.id, name: opponent.name, mascot: opponent.mascot },
         team: team?.name ?? null,
+        modelUsed: body.model || 'openrouter/free',
         generatedAt: new Date().toISOString(),
       }),
       { status: 200, headers: { 'content-type': 'application/json' } }

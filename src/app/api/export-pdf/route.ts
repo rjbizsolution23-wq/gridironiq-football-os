@@ -18,7 +18,7 @@ function drawText(
   y: number,
   size: number,
   maxWidth: number,
-  color: rgb = rgb(0.1, 0.1, 0.1)
+  color: ReturnType<typeof rgb> = rgb(0.1, 0.1, 0.1)
 ) {
   page.drawText(text, { x, y, size, font, color, maxWidth })
 }
@@ -98,7 +98,11 @@ export async function GET(req: NextRequest) {
 
     if (callSheets.length > 0) {
       const sheet = callSheets[0]
-      const sections = parse(sheet.sections) ?? []
+      interface CallSheetSection {
+        situation: string
+        plays?: Array<{ playId?: string; name?: string; concept?: string; priority?: number; note?: string }>
+      }
+      const sections = parse<CallSheetSection[]>(sheet.sections) ?? []
 
       page.drawText(sheet.name, {
         x: margin,
@@ -195,7 +199,11 @@ export async function GET(req: NextRequest) {
           page.drawText(plan.focus, { x: margin + 10, y, size: 9, font: helvetica, color: light })
           y -= 15
         }
-        const sections = parse(plan.sections) ?? []
+        interface PracticeSection {
+          period: string
+          items: Array<{ type?: string; name: string }>
+        }
+        const sections = parse<PracticeSection[]>(plan.sections) ?? []
         for (const section of sections) {
           if (y < 60) break
           page.drawText(`  ${section.period}:`, {
@@ -232,7 +240,7 @@ export async function GET(req: NextRequest) {
   }
 
   const pdfBytes = await pdfDoc.save()
-  return new Response(pdfBytes, {
+  return new Response(Buffer.from(pdfBytes), {
     headers: {
       'content-type': 'application/pdf',
       'content-disposition': `attachment; filename="gridironiq-${type}-${Date.now()}.pdf"`,

@@ -31,6 +31,7 @@ export interface ChatMessageShape {
   content: string
   ts: number
   error?: boolean
+  modelUsed?: string
 }
 
 // ----------------------------------------------------------------------------
@@ -134,9 +135,16 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
           </Button>
         )}
 
-        <span className="px-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          {isUser ? 'You' : 'Coach AI'} · {formatTs(message.ts)}
-        </span>
+        <div className="flex items-center gap-2 px-1">
+          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            {isUser ? 'You' : 'Coach AI'} · {formatTs(message.ts)}
+          </span>
+          {message.modelUsed && !isUser && (
+            <span className="rounded bg-primary/10 px-1.5 py-0.2 font-mono text-[9px] text-primary">
+              {message.modelUsed.replace(':free', '')}
+            </span>
+          )}
+        </div>
       </div>
     </motion.div>
   )

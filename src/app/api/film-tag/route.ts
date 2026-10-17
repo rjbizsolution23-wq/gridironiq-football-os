@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 import { getAllPlays, getOpponents } from '@/lib/data'
+import { createChatCompletion, ChatMessage } from '@/lib/ai-client'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       description: string
       title?: string
       opponentId?: string
+      model?: string
     }
 
     if (!body.description || typeof body.description !== 'string') {
@@ -71,16 +72,17 @@ ${body.description}
 
 Return JSON now.`
 
-    const zai = await ZAI.create()
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: 'assistant', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt },
-      ],
-      thinking: { type: 'disabled' },
+    const messages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: prompt },
+    ]
+
+    const raw = await createChatCompletion({
+      messages,
+      model: body.model || 'openrouter/free',
+      temperature: 0.2,
     })
 
-    const raw = completion.choices[0]?.message?.content ?? ''
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```\s*$/i, '')
@@ -104,6 +106,7 @@ Return JSON now.`
         tags: parsed,
         title: body.title ?? body.description.slice(0, 60),
         opponentId: body.opponentId ?? null,
+        modelUsed: body.model || 'openrouter/free',
         generatedAt: new Date().toISOString(),
       }),
       { status: 200, headers: { 'content-type': 'application/json' } }

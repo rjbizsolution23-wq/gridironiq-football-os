@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import ZAI from 'z-ai-web-dev-sdk'
 import { getAllPlays, getOpponents } from '@/lib/data'
+import { createChatCompletion, ChatMessage } from '@/lib/ai-client'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -41,10 +41,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { imageUrl, base64Image, description } = body as {
+    const { imageUrl, base64Image, description, model } = body as {
       imageUrl?: string
       base64Image?: string
       description?: string
+      model?: string
     }
 
     if (!imageUrl && !base64Image && !description) {
@@ -61,11 +62,11 @@ export async function POST(req: NextRequest) {
       .map((p) => `${p.playId}|${p.name}|${p.concept}`)
       .join('\n')
 
-    const zai = await ZAI.create()
+    // Use free multimodal VLM if image provided, or general free LLM
+    const targetModel = model || (imageUrl || base64Image ? 'nvidia/nemotron-3.5-super-vl:free' : 'openrouter/free')
 
-    // Use VLM to analyze the image if provided
-    const messages: Array<{ role: 'assistant' | 'user'; content: unknown }> = [
-      { role: 'assistant', content: SYSTEM_PROMPT },
+    const messages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
       {
         role: 'user',
         content: [
@@ -82,12 +83,12 @@ export async function POST(req: NextRequest) {
       },
     ]
 
-    const completion = await zai.chat.completions.create({
-      messages: messages as Array<{ role: 'assistant' | 'user'; content: string }>,
-      thinking: { type: 'disabled' },
+    const raw = await createChatCompletion({
+      messages,
+      model: targetModel,
+      temperature: 0.2,
     })
 
-    const raw = completion.choices[0]?.message?.content ?? ''
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```\s*$/i, '')
@@ -105,6 +106,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       tags: parsed,
+      modelUsed: targetModel,
       analyzedAt: new Date().toISOString(),
     })
   } catch (err: unknown) {
