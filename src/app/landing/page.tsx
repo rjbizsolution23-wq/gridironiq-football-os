@@ -344,27 +344,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Payment Rails */}
-        <div className="bg-[#0f172a] text-white rounded-2xl p-8 md:p-10">
-          <h3 className="text-2xl font-bold mb-2">🏛️ Official Payment Rails — RJ Business Solutions</h3>
-          <p className="text-slate-400 text-xs mb-6">Instant activation upon wire or Zelle confirmation. School POs accepted.</p>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h4 className="text-sm font-bold text-blue-200 mb-2">📱 Primary Zelle Settlement</h4>
-              <p className="text-slate-400 text-xs mb-2">Instant confirmation, zero processing delays:</p>
-              <code className="text-sm font-mono text-white bg-black/40 px-3 py-1.5 rounded block">
-                rjbizsolution23@gmail.com
-              </code>
-              <p className="text-slate-400 text-[11px] mt-2">Recipient: Rick Jefferson / RJ Business Solutions</p>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h4 className="text-sm font-bold text-blue-200 mb-2">🏦 Domestic Wire / ACH Transfer</h4>
-              <p className="text-slate-400 text-xs mb-1">Bank: Wells Fargo N.A.</p>
-              <p className="text-slate-400 text-xs mb-2">Routing: <code className="text-white font-mono bg-black/40 px-2 py-0.5 rounded">121000248</code></p>
-              <p className="text-slate-400 text-[11px]">Contact support for dedicated program account number.</p>
-            </div>
-          </div>
-        </div>
+
       </section>
 
       {/* Footer */}
