@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GridironIQ™ — Autonomous Football Intelligence OS & AI Sideline Coordinator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rj-blue: #2563eb;
+      --rj-sky: #0ea5e9;
+      --rj-deep: #1e3a8a;
+      --rj-navy: #0f172a;
+      --rj-soft: #f8fafc;
+      --rj-white: #ffffff;
+      --rj-light: #eff6ff;
+      --rj-border: #bfdbfe;
+      --rj-line: #e2e8f0;
+      --rj-text: #0f172a;
+      --rj-muted-text: #475569;
+      --rj-green: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--rj-soft);
+      color: var(--rj-text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    /* Top Bar */
+    .announcement-bar {
+      background: var(--rj-navy);
+      color: var(--rj-border);
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .announcement-bar strong {
+      color: #fff;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header Nav */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--rj-line);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 80px;
+    }
+    .brand-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+    .brand-logo-img {
+      height: 44px;
+      width: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--rj-border);
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--rj-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-badge {
+      background: var(--rj-light);
+      color: var(--rj-blue);
+      border: 1px solid var(--rj-border);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--rj-blue) 0%, var(--rj-sky) 100%);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--rj-navy);
+      border: 1px solid var(--rj-line);
+    }
+    .btn-secondary:hover {
+      background: var(--rj-soft);
+      border-color: var(--rj-border);
+    }
+    .btn-dark {
+      background: var(--rj-navy);
+      color: #ffffff;
+      border: 1px solid var(--rj-deep);
+    }
+    .btn-dark:hover {
+      background: var(--rj-deep);
+    }
+    .btn-lg {
+      padding: 16px 32px;
+      font-size: 17px;
+      border-radius: 10px;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+      color: #ffffff;
+      padding: 80px 0 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(191, 219, 254, 0.3);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #bfdbfe;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .hero h1 {
+      font-size: 52px;
+      line-height: 1.15;
+      font-weight: 800;
+      margin-bottom: 20px;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero p {
+      font-size: 20px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      max-width: 780px;
+      margin: 0 auto 36px;
+    }
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      font-size: 14px;
+      color: #bfdbfe;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 28px;
+      max-width: 800px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Live Preview Card */
+    .preview-section {
+      margin-top: -60px;
+      margin-bottom: 80px;
+      position: relative;
+      z-index: 20;
+    }
+    .preview-card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid var(--rj-line);
+      box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.15);
+      overflow: hidden;
+      padding: 16px;
+    }
+    .preview-window-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: var(--rj-soft);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px solid var(--rj-line);
+    }
+    .window-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .preview-url {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 13px;
+      color: var(--rj-muted-text);
+      font-weight: 600;
+      background: #ffffff;
+      padding: 4px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--rj-line);
+    }
+
+    /* Module Grid */
+    .section-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 60px;
+    }
+    .section-pill {
+      display: inline-block;
+      background: var(--rj-light);
+      color: var(--rj-blue);
+      border: 1px solid var(--rj-border);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--rj-navy);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .section-subtitle {
+      font-size: 18px;
+      color: var(--rj-muted-text);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 28px;
+      margin-bottom: 80px;
+    }
+    .feature-card {
+      background: #ffffff;
+      border: 1px solid var(--rj-line);
+      border-radius: 14px;
+      padding: 32px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .feature-card:hover {
+      border-color: var(--rj-border);
+      box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.12);
+      transform: translateY(-2px);
+    }
+    .feature-icon-box {
+      width: 52px;
+      height: 52px;
+      background: var(--rj-light);
+      border: 1px solid var(--rj-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .feature-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--rj-navy);
+      margin-bottom: 10px;
+    }
+    .feature-desc {
+      font-size: 15px;
+      color: var(--rj-muted-text);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .feature-list {
+      list-style: none;
+      border-top: 1px solid var(--rj-line);
+      padding-top: 16px;
+    }
+    .feature-list li {
+      font-size: 14px;
+      color: var(--rj-text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feature-list li::before {
+      content: "✓";
+      color: var(--rj-blue);
+      font-weight: bold;
+    }
+
+    /* Pain Point Comparison */
+    .comparison-section {
+      background: #ffffff;
+      border: 1px solid var(--rj-line);
+      border-radius: 16px;
+      padding: 60px 48px;
+      margin-bottom: 100px;
+    }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+    .comp-column {
+      padding: 32px;
+      border-radius: 12px;
+    }
+    .comp-old {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    .comp-new {
+      background: #eff6ff;
+      border: 1px solid var(--rj-border);
+    }
+    .comp-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .comp-old .comp-title { color: #991b1b; }
+    .comp-new .comp-title { color: var(--rj-deep); }
+    .comp-list {
+      list-style: none;
+    }
+    .comp-list li {
+      margin-bottom: 14px;
+      font-size: 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .comp-old li::before {
+      content: "✕";
+      color: #ef4444;
+      font-weight: bold;
+    }
+    .comp-new li::before {
+      content: "★";
+      color: var(--rj-blue);
+      font-weight: bold;
+    }
+
+    /* Pricing Section */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 32px;
+      margin-bottom: 80px;
+    }
+    .pricing-card {
+      background: #ffffff;
+      border: 1px solid var(--rj-line);
+      border-radius: 16px;
+      padding: 44px 36px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .pricing-card.featured {
+      border: 2px solid var(--rj-blue);
+      box-shadow: 0 16px 32px -10px rgba(37, 99, 235, 0.2);
+    }
+    .featured-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--rj-blue) 0%, var(--rj-sky) 100%);
+      color: #ffffff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 18px;
+      border-radius: 9999px;
+    }
+    .pricing-tier-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--rj-navy);
+      margin-bottom: 8px;
+    }
+    .pricing-tier-desc {
+      font-size: 14px;
+      color: var(--rj-muted-text);
+      margin-bottom: 24px;
+    }
+    .pricing-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--rj-navy);
+      line-height: 1;
+      margin-bottom: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .pricing-price span {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--rj-muted-text);
+    }
+    .pricing-term {
+      font-size: 13px;
+      color: var(--rj-blue);
+      font-weight: 600;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--rj-line);
+    }
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 36px;
+    }
+    .pricing-features li {
+      font-size: 15px;
+      color: var(--rj-text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pricing-features li::before {
+      content: "✓";
+      color: var(--rj-blue);
+      font-weight: bold;
+    }
+
+    /* Payment Rails Block */
+    .payment-box {
+      background: var(--rj-navy);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 44px;
+      margin-bottom: 100px;
+    }
+    .payment-box h3 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .payment-box p {
+      color: #94a3b8;
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+    .payment-methods {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .pay-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .pay-card h4 {
+      font-size: 18px;
+      color: #bfdbfe;
+      margin-bottom: 8px;
+    }
+    .pay-card code {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 15px;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    /* Executive Footer */
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--rj-line);
+      padding: 60px 0 30px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .footer-brand h4 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--rj-navy);
+      margin-bottom: 12px;
+    }
+    .footer-brand p {
+      font-size: 14px;
+      color: var(--rj-muted-text);
+      max-width: 400px;
+      line-height: 1.6;
+    }
+    .footer-col h5 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--rj-navy);
+      margin-bottom: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .footer-links {
+      list-style: none;
+    }
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+    .footer-links a {
+      color: var(--rj-muted-text);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: var(--rj-blue);
+    }
+    .footer-bottom {
+      border-top: 1px solid var(--rj-line);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--rj-muted-text);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 36px; }
+      .comparison-grid, .payment-methods, .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement -->
+  <div class="announcement-bar">
+    🏈 <strong>SEASON 2026 ENROLLMENT OPEN:</strong> Complete Football Intelligence OS with Zero-Cost Edge AI Inference is now live.
+  </div>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="container nav-wrapper">
+      <a href="#" class="brand-logo-container">
+        <img src="https://storage.googleapis.com/msgsndr/qQnxRHDtyx0uydPd5sRl/media/67eb83c5e519ed689430646b.jpeg" alt="RJ Business Solutions Logo" class="brand-logo-img">
+        <div class="brand-title">
+          GridironIQ™
+          <span class="brand-badge">Enterprise OS</span>
+        </div>
+      </a>
+      <div class="nav-actions">
+        <a href="https://football.empirecontentstudios.com" target="_blank" class="btn btn-secondary">
+          ⚡ Launch Live App
+        </a>
+        <a href="#pricing" class="btn btn-primary">
+          Get Program License
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        🚀 Powered by RJ Business Solutions Autonomous AI Architecture
+      </div>
+      <h1>
+        Dominate Every Down with Real-Time AI Playcalling & Sideline Intelligence
+      </h1>
+      <p>
+        The end-to-end tactical OS built for high school, college, and club football programs. Replace 15+ weekly hours of manual card drawing, disjointed film tagging, and wristband printing with instant, sovereign AI analysis.
+      </p>
+      <div class="hero-cta-group">
+        <a href="https://football.empirecontentstudios.com" target="_blank" class="btn btn-primary btn-lg">
+          ▶ Test Drive Live OS with Interactive Tour
+        </a>
+        <a href="#features" class="btn btn-secondary btn-lg">
+          Explore All 10 Core Modules
+        </a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">✓ 100% Free AI Model Edge Routing</div>
+        <div class="hero-meta-item">✓ Zero Per-Token API Costs</div>
+        <div class="hero-meta-item">✓ Encrypted Sideline Cloudflare Edge</div>
+        <div class="hero-meta-item">✓ High School & College Ready</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live App Preview Banner -->
+  <section class="container preview-section">
+    <div class="preview-card">
+      <div class="preview-window-bar">
+        <div class="window-dots">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+        </div>
+        <div class="preview-url">https://football.empirecontentstudios.com — Guided Tour Active</div>
+        <a href="https://football.empirecontentstudios.com" target="_blank" class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;">
+          Open Live Portal ↗
+        </a>
+      </div>
+      <div style="background: #0f172a; border-radius: 8px; padding: 36px; text-align: center; color: white;">
+        <h3 style="font-size: 24px; margin-bottom: 8px;">Experience the 10-Step Interactive Walkthrough</h3>
+        <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">
+          Click "Guided Tour" in the top bar to inspect PlaybookIQ, Formation Lab, ScoutIQ, Coach AI, GamePlanIQ, CallSheetIQ, FilmIQ, RedZoneIQ, and InstallIQ live on the field.
+        </p>
+        <a href="https://football.empirecontentstudios.com" target="_blank" class="btn btn-primary">
+          Start 10-Step Guided Tour Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem / Solution Comparison -->
+  <section class="container" style="margin-bottom: 80px;">
+    <div class="comparison-section">
+      <div class="section-header">
+        <span class="section-pill">Why Coaches Switch</span>
+        <h2 class="section-title">The Sideline Paradigm Shift</h2>
+        <p class="section-subtitle">Stop wasting Sunday nights drawing scout cards and fighting bloated legacy video subscriptions.</p>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="comp-column comp-old">
+          <div class="comp-title">❌ The Legacy Manual Grind</div>
+          <ul class="comp-list">
+            <li><strong>15+ Hours Wasted:</strong> Hand-drawing offensive scout cards and defensive wristbands every week.</li>
+            <li><strong>Disjointed Tool Stack:</strong> Video in one app, play diagrams in PowerPoint, play-calling cards in Excel.</li>
+            <li><strong>Expensive Seat Taxes:</strong> Thousands of dollars annually charged per coach or player account.</li>
+            <li><strong>Slow In-Game Adjustments:</strong> Halftime adjustments rely on hasty clipboard scribbles and guesswork.</li>
+            <li><strong>Playbook Leak Risk:</strong> Scouting cards left on sidelines or lost in public lockers.</li>
+          </ul>
+        </div>
+        <div class="comp-column comp-new">
+          <div class="comp-title">★ The GridironIQ™ Advantage</div>
+          <ul class="comp-list">
+            <li><strong>Instant AI Card Generation:</strong> Generate full opponent scout cards and play scripts in under 4 seconds.</li>
+            <li><strong>Unified Sideline Command:</strong> Video analysis, interactive play designer, call sheets, and coach AI in one screen.</li>
+            <li><strong>Zero Per-User Seat Taxes:</strong> Flat programmatic program licensing with unlimited coaches and athletes.</li>
+            <li><strong>Real-Time Down & Distance Math:</strong> Algorithmic call sheet recommendations matching opponent defensive tendencies.</li>
+            <li><strong>Sovereign Local Isolation:</strong> Full database privacy with encrypted Cloudflare edge delivery.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 Core Modules Grid -->
+  <section class="container" id="features" style="margin-bottom: 100px;">
+    <div class="section-header">
+      <span class="section-pill">Complete Software Suite</span>
+      <h2 class="section-title">10 Production-Grade Football Modules</h2>
+      <p class="section-subtitle">Everything your program needs from Monday morning installation to Friday night lights victory.</p>
+    </div>
+
+    <div class="features-grid">
+      <!-- 1 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">📊</div>
+        <h3 class="feature-title">1. Command Center</h3>
+        <p class="feature-desc">Live sideline operational dashboard with high-tempo game state monitoring, quick play dialer, and weather impact adjustments.</p>
+        <ul class="feature-list">
+          <li>Real-time win probability & momentum index</li>
+          <li>Live quarter, down, distance, and field position tracker</li>
+          <li>Instant sideline emergency audible dials</li>
+        </ul>
+      </div>
+
+      <!-- 2 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">📖</div>
+        <h3 class="feature-title">2. PlaybookIQ™</h3>
+        <p class="feature-desc">Interactive 2D vector playbook designer with pass route trees, blocking schemes, motions, and automated SVG exports.</p>
+        <ul class="feature-list">
+          <li>Custom route stem & break angles</li>
+          <li>Zone vs. Man offensive progression reads</li>
+          <li>Instant export to vector wristbands & PDFs</li>
+        </ul>
+      </div>
+
+      <!-- 3 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">👥</div>
+        <h3 class="feature-title">3. Formation Lab</h3>
+        <p class="feature-desc">Visual pre-snap alignment lab with drag-and-drop personnel placement, split calculations, and defensive front counter-modeling.</p>
+        <ul class="feature-list">
+          <li>11, 12, 21, and empty personnel grouping logic</li>
+          <li>Hash mark spacing and receiver boundary splits</li>
+          <li>Defensive front over/under alignment preview</li>
+        </ul>
+      </div>
+
+      <!-- 4 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">🕵️</div>
+        <h3 class="feature-title">4. ScoutIQ™</h3>
+        <p class="feature-desc">Autonomous opponent tendency mining with down-and-distance predictive heatmaps, blitz alerts, and formation cues.</p>
+        <ul class="feature-list">
+          <li>Tendency heatmaps across 1st, 2nd, and 3rd & long</li>
+          <li>High-probability blitz packages and dog pressure cues</li>
+          <li>Auto-generated scout card printables in 1-click</li>
+        </ul>
+      </div>
+
+      <!-- 5 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">🧠</div>
+        <h3 class="feature-title">5. Coach AI Sideline Assistant</h3>
+        <p class="feature-desc">Real-time tactical intelligence powered by the Sovereign Cloudflare Free Router with dynamic sub-second fallback.</p>
+        <ul class="feature-list">
+          <li>Cover 0, Cover 2, Cover 3, Cover 4 beater recommendations</li>
+          <li>Automated 4th-down go/punt/field-goal math</li>
+          <li>Instant audio-ready play call verbalizations</li>
+        </ul>
+      </div>
+
+      <!-- 6 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">📋</div>
+        <h3 class="feature-title">6. GamePlanIQ™</h3>
+        <p class="feature-desc">Structured weekly gameplan builder for first 15 scripted plays, red zone packages, 2-minute drills, and personnel rotations.</p>
+        <ul class="feature-list">
+          <li>Opening scripted drive sequences (Plays 1-15)</li>
+          <li>Down & distance situational call menus</li>
+          <li>Personnel package substitution management</li>
+        </ul>
+      </div>
+
+      <!-- 7 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">📑</div>
+        <h3 class="feature-title">7. CallSheetIQ™</h3>
+        <p class="feature-desc">Customizable laminate-ready sideline call sheet generator with high-contrast print layouts and laminated card PDF downloads.</p>
+        <ul class="feature-list">
+          <li>Grid layout optimized for sideline clipboard holders</li>
+          <li>High-contrast typography readable under stadium lights</li>
+          <li>One-click high-resolution PDF download</li>
+        </ul>
+      </div>
+
+      <!-- 8 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">🎥</div>
+        <h3 class="feature-title">8. FilmIQ™</h3>
+        <p class="feature-desc">AI-assisted video breakdown with automatic formation tagging, defensive front detection, and player assignment grading.</p>
+        <ul class="feature-list">
+          <li>Automated pre-snap formation tagging</li>
+          <li>Coverage shell and blitz path visual overlay</li>
+          <li>Individual athlete assignment plus/minus grade cards</li>
+        </ul>
+      </div>
+
+      <!-- 9 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">🎯</div>
+        <h3 class="feature-title">9. RedZoneIQ™ & 2-Minute Drill</h3>
+        <p class="feature-desc">Situational master board for tight-field scoring efficiency and high-pressure clock management algorithms.</p>
+        <ul class="feature-list">
+          <li>High Red (20-11) vs. Low Red (10-4) vs. Goal Line menus</li>
+          <li>Touchdown conversion vs. Field Goal probability index</li>
+          <li>Two-minute drill clock run-off and timeout optimization</li>
+        </ul>
+      </div>
+
+      <!-- 10 -->
+      <div class="feature-card">
+        <div class="feature-icon-box">🎓</div>
+        <h3 class="feature-title">10. InstallIQ™ & PlayerQuiz</h3>
+        <p class="feature-desc">Structured weekly practice schedule manager paired with interactive athlete quiz testing before taking the field.</p>
+        <ul class="feature-list">
+          <li>Monday Base to Thursday Walkthrough installation tracking</li>
+          <li>Interactive play check & coverage recognition quizzes</li>
+          <li>Player mastery scorecards and playbook comprehension grades</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Tiers -->
+  <section class="container" id="pricing" style="margin-bottom: 100px;">
+    <div class="section-header">
+      <span class="section-pill">Transparent Program Licensing</span>
+      <h2 class="section-title">Enterprise Software. High School Friendly.</h2>
+      <p class="section-subtitle">No per-coach seat fees. No per-player subscriptions. Flat seasonal program access.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Tier 1 -->
+      <div class="pricing-card">
+        <div>
+          <h3 class="pricing-tier-name">High School / Club Tier</h3>
+          <p class="pricing-tier-desc">Complete tactical OS designed for Varsity, JV, and youth club coaching staffs.</p>
+          <div class="pricing-price">$1,497 <span>/ season</span></div>
+          <div class="pricing-term">Flat program fee • Full 1-year access</div>
+          <ul class="pricing-features">
+            <li>Full 10 Core Modules included</li>
+            <li>Unlimited Coaches, Coordinators & Players</li>
+            <li>PlaybookIQ™ with SVG & PDF Wristband Exports</li>
+            <li>ScoutIQ™ Opponent Tendency Mining</li>
+            <li>Coach AI Sideline Assistant with Free Model Routing</li>
+            <li>Interactive PlayerQuiz Comprehension Lab</li>
+            <li>Standard Email & Video Onboarding Support</li>
+          </ul>
+        </div>
+        <a href="mailto:support@rjbusinesssolutions.org?subject=GridironIQ%20High%20School%20License%20Inquiry" class="btn btn-secondary" style="width: 100%;">
+          Secure High School License
+        </a>
+      </div>
+
+      <!-- Tier 2 Featured -->
+      <div class="pricing-card featured">
+        <div class="featured-badge">Most Popular for Programs</div>
+        <div>
+          <h3 class="pricing-tier-name">College / Elite Program Tier</h3>
+          <p class="pricing-tier-desc">Advanced tactical intelligence suite for Collegiate, Prep, and Elite High School operations.</p>
+          <div class="pricing-price">$3,997 <span>/ season</span></div>
+          <div class="pricing-term">Includes dedicated edge cloud instance & concierge setup</div>
+          <ul class="pricing-features">
+            <li>Everything in High School Tier</li>
+            <li>Dedicated Cloudflare Edge Tunnel Instance</li>
+            <li>FilmIQ™ High-Volume Video Ingestion & Tagging</li>
+            <li>Custom Playbook Migration & Digitalization Service</li>
+            <li>Sub-second AI Sideline In-Game Consultation Mode</li>
+            <li>Priority 24/7 Game-Day Hotline with Rick Jefferson</li>
+            <li>Executive Custom Domain & White-Label Branding</li>
+          </ul>
+        </div>
+        <a href="mailto:support@rjbusinesssolutions.org?subject=GridironIQ%20Elite%20College%20License%20Inquiry" class="btn btn-primary" style="width: 100%;">
+          Secure Elite Program License
+        </a>
+      </div>
+    </div>
+
+    <!-- Official Payment Rail Details -->
+    <div class="payment-box">
+      <h3>🏛️ Official Payment Rails — RJ Business Solutions</h3>
+      <p>Instant activation upon wire or Zelle confirmation. Invoices provided for school athletic booster clubs & purchase orders.</p>
+      <div class="payment-methods">
+        <div class="pay-card">
+          <h4>📱 Primary Zelle Settlement</h4>
+          <p style="color: #94a3b8; font-size: 14px;">Instant confirmation, zero processing delays:</p>
+          <code>rjbizsolution23@gmail.com</code>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 8px;">Recipient: Rick Jefferson / RJ Business Solutions</p>
+        </div>
+        <div class="pay-card">
+          <h4>🏦 Domestic Wire / ACH Transfer</h4>
+          <p style="color: #94a3b8; font-size: 14px;">School District & Athletic Department Wire Instructions:</p>
+          <p style="color: #ffffff; font-size: 14px; margin-top: 6px;"><strong>Bank:</strong> Wells Fargo N.A.</p>
+          <p style="color: #ffffff; font-size: 14px;"><strong>Routing Number:</strong> <code>121000248</code></p>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 6px;">Contact support for dedicated account number.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Executive Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>GridironIQ™ Football OS</h4>
+          <p>
+            Autonomous football sideline intelligence, playbook design, and scouting operations platform. Built and maintained by RJ Business Solutions.
+          </p>
+          <p style="margin-top: 12px; font-size: 13px; color: var(--rj-muted-text);">
+            1342 NM 333, Tijeras, New Mexico 87059<br>
+            Direct: support@rjbusinesssolutions.org
+          </p>
+        </div>
+        <div class="footer-col">
+          <h5>System Modules</h5>
+          <ul class="footer-links">
+            <li><a href="https://football.empirecontentstudios.com" target="_blank">Command Center</a></li>
+            <li><a href="https://football.empirecontentstudios.com" target="_blank">PlaybookIQ™</a></li>
+            <li><a href="https://football.empirecontentstudios.com" target="_blank">ScoutIQ™</a></li>
+            <li><a href="https://football.empirecontentstudios.com" target="_blank">Coach AI</a></li>
+            <li><a href="https://football.empirecontentstudios.com" target="_blank">FilmIQ™</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Official Links</h5>
+          <ul class="footer-links">
+            <li><a href="https://rjbusinesssolutions.org" target="_blank">RJ Business Solutions</a></li>
+            <li><a href="https://github.com/rjbizsolution23-wq/gridironiq-football-os" target="_blank">GitHub Repository</a></li>
+            <li><a href="https://football.empirecontentstudios.com" target="_blank">Live Production App</a></li>
+            <li><a href="mailto:support@rjbusinesssolutions.org">Request School PO</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 RJ Business Solutions. All rights reserved. Rick Jefferson, CEO & Lead Architect.</div>
+        <div>GridironIQ™ is proprietary software engineered for athletic programs.</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
