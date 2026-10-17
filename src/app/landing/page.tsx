@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import InteractiveGalleryModal from '@/components/InteractiveGalleryModal'
 
 export const metadata: Metadata = {
   title: 'GridironIQ™ — Autonomous Football Intelligence OS & AI Sideline Coordinator',
@@ -26,11 +27,11 @@ export const metadata: Metadata = {
     title: 'GridironIQ™ — Autonomous Football Intelligence OS',
     description:
       'Dominate every down with real-time AI playcalling, automatic scout cards, interactive playbook vector diagrams, and sideline intelligence.',
-    url: 'https://football.empirecontentstudios.com/landing',
+    url: 'https://gridironiq.empirecontentstudios.com/landing',
     siteName: 'GridironIQ™ Football OS',
     images: [
       {
-        url: 'https://football.empirecontentstudios.com/screenshots/01-command-center.png',
+        url: 'https://gridironiq.empirecontentstudios.com/screenshots/01-command-center.png',
         width: 1440,
         height: 900,
         alt: 'GridironIQ Sideline Command Center and AI Playcalling HUD',
@@ -44,11 +45,11 @@ export const metadata: Metadata = {
     title: 'GridironIQ™ — Football Intelligence OS & AI Sideline Coordinator',
     description:
       'Autonomous football sideline intelligence, playbook design, and scouting operations platform. Built by RJ Business Solutions.',
-    images: ['https://football.empirecontentstudios.com/screenshots/01-command-center.png'],
+    images: ['https://gridironiq.empirecontentstudios.com/screenshots/01-command-center.png'],
     creator: '@ricksolutions1',
   },
   alternates: {
-    canonical: 'https://football.empirecontentstudios.com/landing',
+    canonical: 'https://gridironiq.empirecontentstudios.com/landing',
   },
 }
 
@@ -255,151 +256,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Visual Product Gallery (Actual App Screenshots) */}
+      {/* Visual Product Gallery (Interactive Lightbox Modal) */}
       <section className="max-w-6xl mx-auto px-6 mb-24">
         <div className="text-center max-w-2xl mx-auto mb-14">
           <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
-            Real Software In Action
+            Real Software In Action • Click Any Screen to Zoom
           </span>
           <h2 className="text-3xl font-extrabold text-slate-900 mt-4 mb-2">Inside the Football Intelligence OS</h2>
           <p className="text-slate-600 text-sm">
-            Inspect authentic screenshots captured directly from the live GridironIQ production system.
+            Inspect authentic screenshots captured directly from the live GridironIQ production system. Click any module to zoom in full resolution.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1: PlaybookIQ */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
-            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-              <img
-                src="/screenshots/02-playbook.png"
-                alt="PlaybookIQ 2D Vector Play Designer"
-                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                PlaybookIQ™
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-bold text-slate-900 mb-1">Interactive 2D Vector Designer</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Draw route trees, blocking angles, and progression reads with sub-yard precision. One-click export to wristband inserts.
-              </p>
-              <div className="text-[11px] font-medium text-blue-600">✓ Export to Vector SVG & PDF Wristbands</div>
-            </div>
-          </div>
-
-          {/* Card 2: Coach AI */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
-            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-              <img
-                src="/screenshots/05-coach-ai.png"
-                alt="Coach AI Sideline Assistant with Free Models"
-                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                Coach AI
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-bold text-slate-900 mb-1">Zero-Cost AI Sideline Assistant</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Live coverage beaters and 4th-down decision math routed across sovereign free edge LLMs with sub-second response times.
-              </p>
-              <div className="text-[11px] font-medium text-blue-600">✓ Powered by Sovereign Cloudflare Router</div>
-            </div>
-          </div>
-
-          {/* Card 3: Formation Lab */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
-            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-              <img
-                src="/screenshots/03-formation-lab.png"
-                alt="Formation Lab Pre-Snap Alignment"
-                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                Formation Lab
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-bold text-slate-900 mb-1">Pre-Snap Alignment & Spacing</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Configure personnel packages (11, 12, 21, Empty), hash mark boundaries, and defensive front counter-alignments.
-              </p>
-              <div className="text-[11px] font-medium text-blue-600">✓ Real-time Split & Hash Math</div>
-            </div>
-          </div>
-
-          {/* Card 4: CallSheetIQ */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
-            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-              <img
-                src="/screenshots/07-callsheet.png"
-                alt="CallSheetIQ Laminated Sideline Call Sheet Generator"
-                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                CallSheetIQ™
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-bold text-slate-900 mb-1">Laminate-Ready Call Sheets</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                High-contrast situational call grids formatted specifically for clipboard holders under stadium lights with 1-click PDF download.
-              </p>
-              <div className="text-[11px] font-medium text-blue-600">✓ Stadium Light High-Contrast Print</div>
-            </div>
-          </div>
-
-          {/* Card 5: ScoutIQ */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
-            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-              <img
-                src="/screenshots/04-scout.png"
-                alt="ScoutIQ Opponent Tendency Mining"
-                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                ScoutIQ™
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-bold text-slate-900 mb-1">Opponent Tendency Heatmaps</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Mine opponent blitz percentages, coverage shells, and third-down run/pass ratios directly into printable scout cards.
-              </p>
-              <div className="text-[11px] font-medium text-blue-600">✓ Down & Distance Predictive Heatmaps</div>
-            </div>
-          </div>
-
-          {/* Card 6: FilmIQ */}
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
-            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
-              <img
-                src="/screenshots/08-film.png"
-                alt="FilmIQ Video Analysis and Player Grading"
-                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
-                FilmIQ™
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="text-base font-bold text-slate-900 mb-1">AI Video Breakdown & Grading</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                Pre-snap formation detection, coverage shell recognition, and individual assignment plus/minus grade cards.
-              </p>
-              <div className="text-[11px] font-medium text-blue-600">✓ Automated Formation Tagging</div>
-            </div>
-          </div>
-        </div>
+        <InteractiveGalleryModal />
       </section>
 
       {/* Comparison Section */}
