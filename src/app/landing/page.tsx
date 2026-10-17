@@ -2,24 +2,152 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'GridironIQ™ — Autonomous Football Intelligence OS & AI Sideline Coordinator',
-  description: 'Enterprise football tactical intelligence OS. Replaces 15+ hours of manual card drawing and film tagging with real-time AI sideline intelligence.',
+  description:
+    'The premier AI-powered football coaching platform. Replaces 15+ weekly hours of manual card drawing, disjointed film tagging, and wristband printing with real-time sideline AI playcalling, opponent scouting tendency heatmaps, interactive 2D playbooks, and practice installation systems.',
+  keywords: [
+    'football coaching software',
+    'AI football playcaller',
+    'football playbook software',
+    'football scouting software',
+    'sideline playcalling software',
+    'Hudl alternative',
+    'high school football software',
+    'college football intelligence OS',
+    'football wristband creator',
+    'opponent tendency scout card generator',
+    'football installation schedule',
+    'GridironIQ',
+    'RJ Business Solutions',
+  ],
+  authors: [{ name: 'Rick Jefferson', url: 'https://rjbusinesssolutions.org' }],
+  creator: 'Rick Jefferson',
+  publisher: 'RJ Business Solutions',
+  openGraph: {
+    title: 'GridironIQ™ — Autonomous Football Intelligence OS',
+    description:
+      'Dominate every down with real-time AI playcalling, automatic scout cards, interactive playbook vector diagrams, and sideline intelligence.',
+    url: 'https://football.empirecontentstudios.com/landing',
+    siteName: 'GridironIQ™ Football OS',
+    images: [
+      {
+        url: 'https://football.empirecontentstudios.com/screenshots/01-command-center.png',
+        width: 1440,
+        height: 900,
+        alt: 'GridironIQ Sideline Command Center and AI Playcalling HUD',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GridironIQ™ — Football Intelligence OS & AI Sideline Coordinator',
+    description:
+      'Autonomous football sideline intelligence, playbook design, and scouting operations platform. Built by RJ Business Solutions.',
+    images: ['https://football.empirecontentstudios.com/screenshots/01-command-center.png'],
+    creator: '@ricksolutions1',
+  },
+  alternates: {
+    canonical: 'https://football.empirecontentstudios.com/landing',
+  },
 }
 
+const FAQ_DATA = [
+  {
+    q: 'How does GridironIQ™ replace 15+ hours of weekly coaching staff work?',
+    a: 'Coaching staffs typically spend 15 to 22 hours each week hand-drawing offensive scout cards, building defensive front diagrams in PowerPoint, formatting call sheets in Excel, and sorting video tags. GridironIQ™ automates this workflow: opponent tendencies are mined into instant scout cards, plays are drawn once in 2D vector format and exported to wristbands or call sheets in seconds, and Coach AI recommends coverage beaters in real time.',
+  },
+  {
+    q: 'Does GridironIQ™ work alongside our existing video software like Hudl?',
+    a: 'Yes. Hudl is an archive and hosting tool; GridironIQ™ is your active tactical execution OS. Hudl stores your raw film, while GridironIQ™ breaks down opponent tendencies, recommends situational play calls on 3rd & 4, drafts your opening 15 scripted plays, and generates printable laminated sideline call sheets.',
+  },
+  {
+    q: 'How does the AI model router provide 100% free, zero-token cost inference?',
+    a: 'GridironIQ™ connects directly to Rick Jefferson’s Sovereign Cloudflare Free Models Router (openrouter-free-router.rickjefferson.workers.dev). It continuously discovers and routes prompts exclusively across top-tier verified free models (such as meta-llama/llama-3.3-70b-instruct:free, google/gemini-2.0-flash-exp:free, and deepseek/deepseek-r1:free) with sub-second fallback, ensuring zero API bills for athletic programs.',
+  },
+  {
+    q: 'Is our team playbook, roster, and scouting data kept private?',
+    a: 'Absolutely. GridironIQ™ utilizes sovereign local SQLite database isolation. Your plays, personnel availability boards, and scouting reports remain entirely within your program’s encrypted database. No opponent or public AI system ever trains on or has access to your playbook.',
+  },
+  {
+    q: 'How are program licenses structured for high schools and colleges?',
+    a: 'We offer flat, transparent seasonal licenses rather than per-user seat taxes. High School and Club programs pay $1,497 per season for unlimited coaches and athletes. College and Elite programs pay $3,997 per season, which includes a dedicated Cloudflare edge tunnel instance, full video ingestion, and concierge playbook digitization.',
+  },
+]
+
 export default function LandingPage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'SoftwareApplication',
+        '@id': 'https://football.empirecontentstudios.com/landing#software',
+        name: 'GridironIQ™ Football OS',
+        operatingSystem: 'Web, iOS, Android, macOS, Windows',
+        applicationCategory: 'SportsApplication',
+        description:
+          'Autonomous football tactical intelligence OS. Sideline playcalling, interactive playbook designer, opponent scouting tendencies, and practice installation.',
+        url: 'https://football.empirecontentstudios.com',
+        author: {
+          '@type': 'Organization',
+          name: 'RJ Business Solutions',
+          url: 'https://rjbusinesssolutions.org',
+          founder: 'Rick Jefferson',
+        },
+        offers: [
+          {
+            '@type': 'Offer',
+            name: 'High School / Club Program License',
+            price: '1497.00',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+            validFrom: '2026-01-01',
+          },
+          {
+            '@type': 'Offer',
+            name: 'College / Elite Program License',
+            price: '3997.00',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+            validFrom: '2026-01-01',
+          },
+        ],
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://football.empirecontentstudios.com/landing#faq',
+        mainEntity: FAQ_DATA.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.a,
+          },
+        })),
+      },
+    ],
+  }
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] font-sans antialiased">
+    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] font-sans antialiased selection:bg-blue-600 selection:text-white">
+      {/* Structured Data for SEO / AEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Top Bar */}
-      <div className="bg-[#0f172a] text-[#bfdbfe] text-xs md:text-sm text-center py-2.5 px-4 font-medium border-b border-white/10">
+      <aside aria-label="Announcement" className="bg-[#0f172a] text-[#bfdbfe] text-xs md:text-sm text-center py-2.5 px-4 font-medium border-b border-white/10">
         🏈 <strong className="text-white">SEASON 2026 ENROLLMENT OPEN:</strong> Complete Football Intelligence OS with Sovereign Free Edge AI Routing.
-      </div>
+      </aside>
 
       {/* Navigation */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 no-underline">
             <img
               src="https://storage.googleapis.com/msgsndr/qQnxRHDtyx0uydPd5sRl/media/67eb83c5e519ed689430646b.jpeg"
-              alt="RJ Logo"
+              alt="RJ Business Solutions Logo"
               className="w-10 h-10 rounded-lg object-cover border border-blue-200"
             />
             <div className="flex items-center gap-2">
@@ -29,20 +157,29 @@ export default function LandingPage() {
               </span>
             </div>
           </a>
-          <div className="flex items-center gap-4">
+          <nav aria-label="Main Navigation" className="flex items-center gap-4">
+            <a href="#showcase" className="hidden md:inline-block text-xs font-semibold text-slate-600 hover:text-blue-600">
+              App Showcase
+            </a>
+            <a href="#features" className="hidden md:inline-block text-xs font-semibold text-slate-600 hover:text-blue-600">
+              10 Core Modules
+            </a>
+            <a href="#faq" className="hidden md:inline-block text-xs font-semibold text-slate-600 hover:text-blue-600">
+              FAQ
+            </a>
             <a
               href="/"
-              className="px-4 py-2 text-sm font-semibold text-slate-800 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition"
+              className="px-4 py-2 text-xs md:text-sm font-semibold text-slate-800 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition"
             >
               ⚡ Enter App
             </a>
             <a
               href="#pricing"
-              className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-lg shadow hover:opacity-95 transition"
+              className="px-4 py-2 text-xs md:text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-lg shadow hover:opacity-95 transition"
             >
-              Get Program License
+              Get License
             </a>
-          </div>
+          </nav>
         </div>
       </header>
 
@@ -66,10 +203,10 @@ export default function LandingPage() {
               ▶ Test Drive Live OS with Interactive Tour
             </a>
             <a
-              href="#features"
+              href="#showcase"
               className="px-8 py-4 text-base font-bold text-white bg-slate-900/60 border border-white/20 rounded-xl hover:bg-slate-900 transition"
             >
-              Explore All 10 Core Modules
+              View Actual System Screenshots
             </a>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-sm text-blue-200 border-t border-white/15 pt-8 max-w-3xl mx-auto">
@@ -81,33 +218,186 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Interactive Tour Preview Card */}
-      <section className="max-w-6xl mx-auto px-6 -mt-12 mb-20 relative z-20">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl p-6">
-          <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4">
+      {/* Hero Live Screenshot Display */}
+      <section id="showcase" className="max-w-6xl mx-auto px-6 -mt-12 mb-20 relative z-20">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden p-3 md:p-5">
+          <div className="flex items-center justify-between p-3 bg-slate-100/80 border border-slate-200 rounded-xl mb-4">
             <div className="flex gap-2">
               <span className="w-3 h-3 rounded-full bg-red-500"></span>
               <span className="w-3 h-3 rounded-full bg-amber-500"></span>
               <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
             </div>
-            <div className="text-xs font-mono text-slate-500 font-semibold bg-white px-4 py-1 rounded border border-slate-200">
-              https://football.empirecontentstudios.com — Guided Tour Active
+            <div className="text-xs font-mono text-slate-600 font-semibold bg-white px-4 py-1 rounded border border-slate-200">
+              https://football.empirecontentstudios.com — Live Command Center HUD
             </div>
             <a href="/" className="text-xs font-bold text-blue-600 hover:underline">
               Launch App ↗
             </a>
           </div>
-          <div className="bg-slate-900 rounded-xl p-8 text-center text-white">
-            <h3 className="text-2xl font-bold mb-2">10-Step Interactive Walkthrough Included</h3>
-            <p className="text-slate-400 text-sm max-w-2xl mx-auto mb-6">
-              Inspect PlaybookIQ, Formation Lab, ScoutIQ, Coach AI, GamePlanIQ, CallSheetIQ, FilmIQ, RedZoneIQ, and InstallIQ live on the field.
-            </p>
-            <a
-              href="/"
-              className="inline-block px-6 py-3 font-bold text-sm text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-lg shadow hover:opacity-95 transition"
-            >
-              Start 10-Step Guided Tour Now
-            </a>
+          
+          <div className="relative rounded-xl overflow-hidden border border-slate-300 shadow-inner group">
+            <img
+              src="/screenshots/01-command-center.png"
+              alt="GridironIQ Sideline Command Center and Real-Time Play Dialing"
+              className="w-full h-auto object-cover transform transition duration-500 group-hover:scale-[1.01]"
+              loading="eager"
+            />
+            <div className="absolute bottom-4 left-4 right-4 bg-slate-950/85 backdrop-blur-md text-white p-4 rounded-xl border border-white/15 flex flex-col md:flex-row items-center justify-between gap-3">
+              <div>
+                <h4 className="font-bold text-sm text-white">Live Sideline Command Center</h4>
+                <p className="text-xs text-slate-300">Win probability, real-time momentum index, down & distance dials, and weather impact adjustments.</p>
+              </div>
+              <a href="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold whitespace-nowrap">
+                Start 10-Step Guided Tour Now
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Visual Product Gallery (Actual App Screenshots) */}
+      <section className="max-w-6xl mx-auto px-6 mb-24">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
+            Real Software In Action
+          </span>
+          <h2 className="text-3xl font-extrabold text-slate-900 mt-4 mb-2">Inside the Football Intelligence OS</h2>
+          <p className="text-slate-600 text-sm">
+            Inspect authentic screenshots captured directly from the live GridironIQ production system.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Card 1: PlaybookIQ */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
+            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
+              <img
+                src="/screenshots/02-playbook.png"
+                alt="PlaybookIQ 2D Vector Play Designer"
+                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
+                PlaybookIQ™
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="text-base font-bold text-slate-900 mb-1">Interactive 2D Vector Designer</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                Draw route trees, blocking angles, and progression reads with sub-yard precision. One-click export to wristband inserts.
+              </p>
+              <div className="text-[11px] font-medium text-blue-600">✓ Export to Vector SVG & PDF Wristbands</div>
+            </div>
+          </div>
+
+          {/* Card 2: Coach AI */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
+            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
+              <img
+                src="/screenshots/05-coach-ai.png"
+                alt="Coach AI Sideline Assistant with Free Models"
+                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <span className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
+                Coach AI
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="text-base font-bold text-slate-900 mb-1">Zero-Cost AI Sideline Assistant</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                Live coverage beaters and 4th-down decision math routed across sovereign free edge LLMs with sub-second response times.
+              </p>
+              <div className="text-[11px] font-medium text-blue-600">✓ Powered by Sovereign Cloudflare Router</div>
+            </div>
+          </div>
+
+          {/* Card 3: Formation Lab */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
+            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
+              <img
+                src="/screenshots/03-formation-lab.png"
+                alt="Formation Lab Pre-Snap Alignment"
+                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
+                Formation Lab
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="text-base font-bold text-slate-900 mb-1">Pre-Snap Alignment & Spacing</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                Configure personnel packages (11, 12, 21, Empty), hash mark boundaries, and defensive front counter-alignments.
+              </p>
+              <div className="text-[11px] font-medium text-blue-600">✓ Real-time Split & Hash Math</div>
+            </div>
+          </div>
+
+          {/* Card 4: CallSheetIQ */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
+            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
+              <img
+                src="/screenshots/07-callsheet.png"
+                alt="CallSheetIQ Laminated Sideline Call Sheet Generator"
+                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
+                CallSheetIQ™
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="text-base font-bold text-slate-900 mb-1">Laminate-Ready Call Sheets</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                High-contrast situational call grids formatted specifically for clipboard holders under stadium lights with 1-click PDF download.
+              </p>
+              <div className="text-[11px] font-medium text-blue-600">✓ Stadium Light High-Contrast Print</div>
+            </div>
+          </div>
+
+          {/* Card 5: ScoutIQ */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
+            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
+              <img
+                src="/screenshots/04-scout.png"
+                alt="ScoutIQ Opponent Tendency Mining"
+                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
+                ScoutIQ™
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="text-base font-bold text-slate-900 mb-1">Opponent Tendency Heatmaps</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                Mine opponent blitz percentages, coverage shells, and third-down run/pass ratios directly into printable scout cards.
+              </p>
+              <div className="text-[11px] font-medium text-blue-600">✓ Down & Distance Predictive Heatmaps</div>
+            </div>
+          </div>
+
+          {/* Card 6: FilmIQ */}
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition group">
+            <div className="relative h-48 bg-slate-100 overflow-hidden border-b border-slate-100">
+              <img
+                src="/screenshots/08-film.png"
+                alt="FilmIQ Video Analysis and Player Grading"
+                className="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <span className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm">
+                FilmIQ™
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="text-base font-bold text-slate-900 mb-1">AI Video Breakdown & Grading</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                Pre-snap formation detection, coverage shell recognition, and individual assignment plus/minus grade cards.
+              </p>
+              <div className="text-[11px] font-medium text-blue-600">✓ Automated Formation Tagging</div>
+            </div>
           </div>
         </div>
       </section>
@@ -343,8 +633,28 @@ export default function LandingPage() {
             </a>
           </div>
         </div>
+      </section>
 
+      {/* Answer Engine Optimization (AEO) & FAQ Section */}
+      <section id="faq" className="max-w-4xl mx-auto px-6 mb-24">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full">
+            Frequently Asked Questions
+          </span>
+          <h2 className="text-3xl font-extrabold text-slate-900 mt-4 mb-2">Clear Answers for Athletic Directors & Coaches</h2>
+          <p className="text-slate-600 text-sm">
+            Everything you need to know about program deployment, data privacy, and sideline execution.
+          </p>
+        </div>
 
+        <div className="space-y-4">
+          {FAQ_DATA.map((faq, idx) => (
+            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <h3 className="text-base font-bold text-slate-900 mb-2">{faq.q}</h3>
+              <p className="text-xs md:text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Footer */}
